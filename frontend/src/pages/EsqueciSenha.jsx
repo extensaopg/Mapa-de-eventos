@@ -1,26 +1,25 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-function Login() {
+function EsqueciSenha() {
+    const [email, setEmail] = useState('')
+    const [msg, setMsg] = useState('')
+    const [error, setError] = useState('')
     const navigate = useNavigate()
 
-    const [email, setEmail] = useState('')
-    const [senha, setSenha] = useState('')
-    const [error, setError] = useState('')
-
-    async function handleLogin(e) {
+    async function handleSubmit(e) {
         e.preventDefault()
 
+        setMsg('')
         setError('')
 
         try {
-            const res = await fetch('http://localhost:3000/usuarios/login', {
+            const res = await fetch('http://localhost:3000/usuarios/esqueci-senha', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                credentials: 'include',
-                body: JSON.stringify({ email, senha })
+                body: JSON.stringify({ email })
             })
 
             const data = await res.json()
@@ -30,8 +29,7 @@ function Login() {
                 return
             }
 
-            // login ok → vai pro mapa
-            navigate('/')
+            setMsg('Email enviado! Verifique sua caixa de entrada.')
 
         } catch (err) {
             setError('Erro ao conectar com servidor')
@@ -40,48 +38,27 @@ function Login() {
 
     return (
         <div style={styles.container}>
-            <h2>Login</h2>
+            <h2>Recuperar senha</h2>
 
-            <form onSubmit={handleLogin} style={styles.form}>
-
+            <form onSubmit={handleSubmit} style={styles.form}>
                 <input
-                    placeholder="Email"
+                    placeholder="Digite seu email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     style={styles.input}
                 />
 
-                <input
-                    placeholder="Senha"
-                    type="password"
-                    value={senha}
-                    onChange={(e) => setSenha(e.target.value)}
-                    style={styles.input}
-                />
-
-                {error && <p style={{ color: 'red' }}>{error}</p>}
-
-                <button type="submit" style={styles.button}>
-                    Entrar
+                <button style={styles.button}>
+                    Enviar
                 </button>
-
             </form>
 
-            <div style={styles.links}>
-                <p
-                    style={styles.link}
-                    onClick={() => navigate('/esqueci-senha')}
-                >
-                    Esqueci minha senha
-                </p>
+            {msg && <p style={{ color: 'green' }}>{msg}</p>}
+            {error && <p style={{ color: 'red' }}>{error}</p>}
 
-                <p
-                    style={styles.link}
-                    onClick={() => navigate('/cadastro')}
-                >
-                    Criar conta
-                </p>
-            </div>
+            <p style={styles.link} onClick={() => navigate('/login')}>
+                Voltar para login
+            </p>
         </div>
     )
 }
@@ -114,17 +91,11 @@ const styles = {
         color: 'white',
         cursor: 'pointer'
     },
-    links: {
-        marginTop: 15,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 8,
-        textAlign: 'center'
-    },
     link: {
+        marginTop: 15,
         color: '#1976d2',
         cursor: 'pointer'
     }
 }
 
-export default Login
+export default EsqueciSenha

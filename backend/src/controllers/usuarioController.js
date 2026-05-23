@@ -152,6 +152,97 @@ async function login(req, res) {
         })
     }
 }
+async function esqueciSenha(req, res) {
+    try {
+        const { email } = req.body
+
+        const [user] = await db.execute(
+            'SELECT id FROM Usuario WHERE email = ?',
+            [email]
+        )
+
+        if (user.length === 0) {
+            return res.status(400).json({
+                message: 'Email não encontrado'
+            })
+        }
+
+        const token = crypto.randomBytes(32).toString('hex')
+
+        const expira = new Date()
+        expira.setHours(expira.getHours() + 1) // 1 hora
+
+        await db.execute(
+            `UPDATE Usuario 
+             SET reset_token = ?, reset_expira = ?
+             WHERE email = ?`,
+            [token, expira, email]
+        )
+
+        await enviarEmailReset(email, token)
+
+        console.log('LINK RESET:', link)
+
+        return res.json({
+            message: 'Email enviado com instruções de recuperação'
+        })
+
+    } catch (error) {
+        console.error(error)
+
+        return res.status(500).json({
+            message: 'Erro ao processar solicitação'
+        })
+    }
+}
+
+async function resetSenha(req, res) {
+    try {
+        const { token } = req.params
+        const { senha } = req.body
+
+        const [user] = await db.execute(
+            `SELECT id, reset_expira 
+             FROM Usuario 
+             WHERE reset_token = ?`,
+            [token]
+        )
+
+        if (user.length === 0) {
+            return res.status(400).json({
+                message: 'Token inválido'
+            })
+        }
+
+        const usuario = user[0]
+
+        if (new Date() > new Date(usuario.reset_expira)) {
+            return res.status(400).json({
+                message: 'Token expirado'
+            })
+        }
+
+        const senhaHash = await bcrypt.hash(senha, 10)
+
+        await db.execute(
+            `UPDATE Usuario 
+             SET senha = ?, reset_token = NULL, reset_expira = NULL
+             WHERE reset_token = ?`,
+            [senhaHash, token]
+        )
+
+        return res.json({
+            message: 'Senha alterada com sucesso'
+        })
+
+    } catch (error) {
+        console.error(error)
+
+        return res.status(500).json({
+            message: 'Erro ao redefinir senha'
+        })
+    }
+}
 
 module.exports = {
     criarUsuario,

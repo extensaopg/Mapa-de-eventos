@@ -4,6 +4,7 @@ import MapView from './components/MapView'
 import AtivarConta from './pages/AtivarConta'
 import Login from './pages/Login'
 import Cadastro from './pages/Cadastro'
+import EsqueciSenha from './pages/EsqueciSenha'
 
 function App() {
     return (
@@ -17,6 +18,8 @@ function App() {
                 <Route path="/login" element={<Login />} />
 
                 <Route path="/cadastro" element={<Cadastro />} />
+
+                <Route path="/esqueci-senha" element={<EsqueciSenha />} />
             </Routes>
         </BrowserRouter>
     )
