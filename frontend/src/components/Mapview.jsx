@@ -123,6 +123,7 @@ function MapView() {
                 </Marker>
             ))}
         </MapContainer>
+
     )
 }
 

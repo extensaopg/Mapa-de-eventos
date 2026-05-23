@@ -207,10 +207,30 @@ async function resetSenha(req, res) {
     }
 }
 
+async function me(req, res) {
+    try {
+        if (!req.session.user) {
+            return res.status(401).json({
+                message: 'Não autenticado'
+            })
+        }
+
+        return res.json(req.session.user)
+
+    } catch (error) {
+        console.error(error)
+
+        return res.status(500).json({
+            message: 'Erro ao buscar usuário'
+        })
+    }
+}
+
 module.exports = {
     criarUsuario,
     ativarConta,
     login,
     esqueciSenha,
-    resetSenha
+    resetSenha,
+    me
 }

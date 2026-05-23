@@ -6,13 +6,14 @@ import Login from './pages/Login'
 import Cadastro from './pages/Cadastro'
 import EsqueciSenha from './pages/EsqueciSenha'
 import ResetSenha from './pages/ResetSenha'
+import Home from './pages/Home.jsx'
 
 function App() {
     return (
         <BrowserRouter>
             <Routes>
 
-                <Route path="/" element={<MapView />} />
+                <Route path="/" element={<Home />} />
 
                 <Route path="/ativar-conta" element={<AtivarConta />} />
 
