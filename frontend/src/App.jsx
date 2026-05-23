@@ -2,21 +2,24 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 import MapView from './components/MapView'
 import AtivarConta from './pages/AtivarConta'
+import Login from './pages/Login'
+import Cadastro from './pages/Cadastro'
 
 function App() {
-  return (
-      <BrowserRouter>
-        <Routes>
+    return (
+        <BrowserRouter>
+            <Routes>
 
-          {/* mapa principal */}
-          <Route path="/" element={<MapView />} />
+                <Route path="/" element={<MapView />} />
 
-          {/* ativação de conta */}
-          <Route path="/ativar-conta" element={<AtivarConta />} />
+                <Route path="/ativar-conta" element={<AtivarConta />} />
 
-        </Routes>
-      </BrowserRouter>
-  )
+                <Route path="/login" element={<Login />} />
+
+                <Route path="/cadastro" element={<Cadastro />} />
+            </Routes>
+        </BrowserRouter>
+    )
 }
 
 export default App

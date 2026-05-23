@@ -94,7 +94,67 @@ async function ativarConta(req, res) {
     }
 }
 
+async function login(req, res) {
+    try {
+        const { email, senha } = req.body
+
+        if (!email || !senha) {
+            return res.status(400).json({
+                message: 'Email e senha são obrigatórios'
+            })
+        }
+
+        const [users] = await db.execute(
+            'SELECT * FROM Usuario WHERE email = ?',
+            [email]
+        )
+
+        if (users.length === 0) {
+            return res.status(401).json({
+                message: 'Usuário não encontrado'
+            })
+        }
+
+        const user = users[0]
+
+        // verifica se está ativo
+        if (!user.ativo) {
+            return res.status(401).json({
+                message: 'Conta não ativada'
+            })
+        }
+
+        // valida senha
+        const senhaOk = await bcrypt.compare(senha, user.senha)
+
+        if (!senhaOk) {
+            return res.status(401).json({
+                message: 'Senha inválida'
+            })
+        }
+
+        // cria sessão
+        req.session.user = {
+            id: user.id,
+            nome: user.nome,
+            email: user.email
+        }
+
+        return res.json({
+            message: 'Login realizado com sucesso'
+        })
+
+    } catch (error) {
+        console.error(error)
+
+        return res.status(500).json({
+            message: 'Erro no login'
+        })
+    }
+}
+
 module.exports = {
     criarUsuario,
-    ativarConta
+    ativarConta,
+    login
 }
