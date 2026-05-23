@@ -1,0 +1,5 @@
+ALTER TABLE Usuario
+    ADD COLUMN ativo BOOLEAN DEFAULT FALSE;
+
+ALTER TABLE Usuario
+    ADD COLUMN token_ativacao VARCHAR(255);
