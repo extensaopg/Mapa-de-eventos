@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt')
 const crypto = require('crypto')
-const db = require('../database/connection')
-const { enviarEmailAtivacao } = require('../services/emailService')
+const Usuario = require('../models/Usuario')
+const { enviarEmailAtivacao, enviarEmailReset } = require('../services/emailService')
 
 async function criarUsuario(req, res) {
     try {
@@ -13,39 +13,27 @@ async function criarUsuario(req, res) {
             })
         }
 
-        // verifica duplicado
-        const [existente] = await db.execute(
-            'SELECT id FROM Usuario WHERE email = ?',
-            [email]
-        )
+        const existente = await Usuario.findOne({ email })
 
-        if (existente.length > 0) {
+        if (existente) {
             return res.status(409).json({
                 message: 'Email já cadastrado'
             })
         }
 
-        // criptografa senha
         const senhaHash = await bcrypt.hash(senha, 10)
 
-        // gera token ativação
         const token = crypto.randomBytes(32).toString('hex')
 
-        // salva usuário
-        const sql = `
-            INSERT INTO Usuario (nome, email, telefone, senha, ativo, token_ativacao)
-            VALUES (?, ?, ?, ?, false, ?)
-        `
-
-        await db.execute(sql, [
+        await Usuario.create({
             nome,
             email,
             telefone,
-            senhaHash,
-            token
-        ])
+            senha: senhaHash,
+            ativo: false,
+            token_ativacao: token
+        })
 
-        // envia email ativação
         await enviarEmailAtivacao(email, token)
 
         return res.status(201).json({
@@ -62,25 +50,21 @@ async function criarUsuario(req, res) {
 }
 
 async function ativarConta(req, res) {
-    console.log("ja ativou essa banana")
     try {
         const { token } = req.params
 
-        const [user] = await db.execute(
-            'SELECT id FROM Usuario WHERE token_ativacao = ?',
-            [token]
-        )
+        const user = await Usuario.findOne({ token_ativacao: token })
 
-        if (user.length === 0) {
+        if (!user) {
             return res.status(400).json({
                 message: 'Token inválido'
             })
         }
 
-        await db.execute(
-            'UPDATE Usuario SET ativo = true, token_ativacao = NULL WHERE token_ativacao = ?',
-            [token]
-        )
+        user.ativo = true
+        user.token_ativacao = null
+
+        await user.save()
 
         return res.json({
             message: 'Conta ativada com sucesso'
@@ -88,6 +72,7 @@ async function ativarConta(req, res) {
 
     } catch (error) {
         console.error(error)
+
         return res.status(500).json({
             message: 'Erro ao ativar conta'
         })
@@ -104,27 +89,20 @@ async function login(req, res) {
             })
         }
 
-        const [users] = await db.execute(
-            'SELECT * FROM Usuario WHERE email = ?',
-            [email]
-        )
+        const user = await Usuario.findOne({ email })
 
-        if (users.length === 0) {
+        if (!user) {
             return res.status(401).json({
                 message: 'Usuário não encontrado'
             })
         }
 
-        const user = users[0]
-
-        // verifica se está ativo
         if (!user.ativo) {
             return res.status(401).json({
                 message: 'Conta não ativada'
             })
         }
 
-        // valida senha
         const senhaOk = await bcrypt.compare(senha, user.senha)
 
         if (!senhaOk) {
@@ -133,9 +111,8 @@ async function login(req, res) {
             })
         }
 
-        // cria sessão
         req.session.user = {
-            id: user.id,
+            id: user._id,
             nome: user.nome,
             email: user.email
         }
@@ -152,16 +129,14 @@ async function login(req, res) {
         })
     }
 }
+
 async function esqueciSenha(req, res) {
     try {
         const { email } = req.body
 
-        const [user] = await db.execute(
-            'SELECT id FROM Usuario WHERE email = ?',
-            [email]
-        )
+        const user = await Usuario.findOne({ email })
 
-        if (user.length === 0) {
+        if (!user) {
             return res.status(400).json({
                 message: 'Email não encontrado'
             })
@@ -170,18 +145,14 @@ async function esqueciSenha(req, res) {
         const token = crypto.randomBytes(32).toString('hex')
 
         const expira = new Date()
-        expira.setHours(expira.getHours() + 1) // 1 hora
+        expira.setHours(expira.getHours() + 1)
 
-        await db.execute(
-            `UPDATE Usuario 
-             SET reset_token = ?, reset_expira = ?
-             WHERE email = ?`,
-            [token, expira, email]
-        )
+        user.reset_token = token
+        user.reset_expira = expira
+
+        await user.save()
 
         await enviarEmailReset(email, token)
-
-        console.log('LINK RESET:', link)
 
         return res.json({
             message: 'Email enviado com instruções de recuperação'
@@ -201,22 +172,15 @@ async function resetSenha(req, res) {
         const { token } = req.params
         const { senha } = req.body
 
-        const [user] = await db.execute(
-            `SELECT id, reset_expira 
-             FROM Usuario 
-             WHERE reset_token = ?`,
-            [token]
-        )
+        const user = await Usuario.findOne({ reset_token: token })
 
-        if (user.length === 0) {
+        if (!user) {
             return res.status(400).json({
                 message: 'Token inválido'
             })
         }
 
-        const usuario = user[0]
-
-        if (new Date() > new Date(usuario.reset_expira)) {
+        if (new Date() > user.reset_expira) {
             return res.status(400).json({
                 message: 'Token expirado'
             })
@@ -224,12 +188,11 @@ async function resetSenha(req, res) {
 
         const senhaHash = await bcrypt.hash(senha, 10)
 
-        await db.execute(
-            `UPDATE Usuario 
-             SET senha = ?, reset_token = NULL, reset_expira = NULL
-             WHERE reset_token = ?`,
-            [senhaHash, token]
-        )
+        user.senha = senhaHash
+        user.reset_token = null
+        user.reset_expira = null
+
+        await user.save()
 
         return res.json({
             message: 'Senha alterada com sucesso'
@@ -247,5 +210,7 @@ async function resetSenha(req, res) {
 module.exports = {
     criarUsuario,
     ativarConta,
-    login
+    login,
+    esqueciSenha,
+    resetSenha
 }

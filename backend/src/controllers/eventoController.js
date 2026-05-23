@@ -1,97 +1,78 @@
-const db = require('../database/connection');
+const Evento = require('../models/Evento');
 
 async function criarEvento(req, res) {
     try {
-
         const {
             descricao,
             data_inicio,
             data_fim,
             latitude,
             longitude
-        } = req.body;
+        } = req.body
 
-        const [result] = await db.execute(
-            `
-            INSERT INTO Evento
-            (descricao, data_inicio, data_fim, latitude, longitude)
-            VALUES (?, ?, ?, ?, ?)
-            `,
-            [
-                descricao,
-                data_inicio,
-                data_fim,
-                latitude,
-                longitude
-            ]
-        );
+        const evento = await Evento.create({
+            descricao,
+            data_inicio,
+            data_fim,
+            latitude,
+            longitude
+        })
 
         res.status(201).json({
             message: 'Evento criado com sucesso',
-            id: result.insertId
-        });
+            id: evento._id
+        })
 
     } catch (error) {
-
-        console.error(error);
+        console.error(error)
 
         res.status(500).json({
             error: 'Erro ao criar evento'
-        });
+        })
     }
 }
 
 async function listarEventos(req, res) {
     try {
+        const eventos = await Evento.find()
 
-        const [eventos] = await db.execute(
-            'SELECT * FROM Evento'
-        );
-
-        res.json(eventos);
+        res.json(eventos)
 
     } catch (error) {
-
-        console.error(error);
+        console.error(error)
 
         res.status(500).json({
             error: 'Erro ao buscar eventos'
-        });
+        })
     }
 }
 
 async function buscarEventoPorId(req, res) {
     try {
+        const { id } = req.params
 
-        const { id } = req.params;
+        const evento = await Evento.findById(id)
 
-        const [evento] = await db.execute(
-            'SELECT * FROM Evento WHERE id = ?',
-            [id]
-        );
-
-        if (evento.length === 0) {
+        if (!evento) {
             return res.status(404).json({
                 error: 'Evento não encontrado'
-            });
+            })
         }
 
-        res.json(evento[0]);
+        res.json(evento)
 
     } catch (error) {
-
-        console.error(error);
+        console.error(error)
 
         res.status(500).json({
             error: 'Erro ao buscar evento'
-        });
+        })
     }
 }
 
 async function atualizarEvento(req, res) {
     try {
-
-        const { id } = req.params;
+        const { id } = req.params
 
         const {
             descricao,
@@ -99,64 +80,45 @@ async function atualizarEvento(req, res) {
             data_fim,
             latitude,
             longitude
-        } = req.body;
+        } = req.body
 
-        await db.execute(
-            `
-            UPDATE Evento
-            SET
-                descricao = ?,
-                data_inicio = ?,
-                data_fim = ?,
-                latitude = ?,
-                longitude = ?
-            WHERE id = ?
-            `,
-            [
-                descricao,
-                data_inicio,
-                data_fim,
-                latitude,
-                longitude,
-                id
-            ]
-        );
+        await Evento.findByIdAndUpdate(id, {
+            descricao,
+            data_inicio,
+            data_fim,
+            latitude,
+            longitude
+        })
 
         res.json({
             message: 'Evento atualizado com sucesso'
-        });
+        })
 
     } catch (error) {
-
-        console.error(error);
+        console.error(error)
 
         res.status(500).json({
             error: 'Erro ao atualizar evento'
-        });
+        })
     }
 }
 
 async function deletarEvento(req, res) {
     try {
+        const { id } = req.params
 
-        const { id } = req.params;
-
-        await db.execute(
-            'DELETE FROM Evento WHERE id = ?',
-            [id]
-        );
+        await Evento.findByIdAndDelete(id)
 
         res.json({
             message: 'Evento deletado com sucesso'
-        });
+        })
 
     } catch (error) {
-
-        console.error(error);
+        console.error(error)
 
         res.status(500).json({
             error: 'Erro ao deletar evento'
-        });
+        })
     }
 }
 

@@ -4,359 +4,223 @@ Sistema web para visualização de eventos e stands em mapa interativo utilizand
 
 ---
 
-# Tecnologias Utilizadas
+# 🚀 Tecnologias Utilizadas
 
 ## Frontend
-
-* React
-* Vite
-* Leaflet
-* React Leaflet
+- React
+- Vite
+- Leaflet
+- React Leaflet
 
 ## Backend
-
-* Node.js
-* Express
-* MySQL2
-* Dotenv
+- Node.js
+- Express
+- MongoDB (Mongoose)
+- Dotenv
+- Express Session
+- bcrypt
 
 ## Banco de Dados
-
-* MySQL 8
-* Docker
+- MongoDB
+- Docker (local)
 
 ---
 
-# Estrutura do Projeto
+# 📁 Estrutura do Projeto
 
-```bash
 project/
-│
 ├── backend/
 ├── frontend/
 ├── database/
 └── docker-compose.yml
-```
 
 ---
 
-# Pré-requisitos
+# ⚙️ Pré-requisitos
 
-Antes de iniciar o projeto, instale:
+## Node.js
+https://nodejs.org/
 
-## Obrigatórios
-
-### Node.js
-
-Download:
-[https://nodejs.org/](https://nodejs.org/)
-
-Verificar instalação:
-
-```bash
+Verificar:
 node -v
 npm -v
-```
 
 ---
 
-### Docker Desktop
+## Docker Desktop
+https://www.docker.com/products/docker-desktop/
 
-Download:
-[https://www.docker.com/products/docker-desktop/](https://www.docker.com/products/docker-desktop/)
-
-Verificar instalação:
-
-```bash
+Verificar:
 docker -v
-```
 
 ---
 
-# Primeira Inicialização do Projeto
+# 🚀 Primeira Inicialização
 
 ---
 
-# 1. Clonar o Repositório
+## 1. Clonar o repositório
 
-```bash
 git clone URL_DO_REPOSITORIO
-```
-
-Entrar na pasta:
-
-```bash
 cd nome-do-projeto
-```
 
 ---
 
-# 2. Instalar Dependências do Backend
+## 2. Instalar dependências
 
-```bash
+### Backend
 cd backend
 npm install
-```
 
----
-
-# 3. Instalar Dependências do Frontend
-
-```bash
+### Frontend
 cd ../frontend
 npm install
-```
 
 ---
 
-# 4. Subir Banco de Dados Docker
+## 3. Subir MongoDB com Docker
 
 Na raiz do projeto:
 
-```bash
 docker compose up -d
-```
 
-Verificar se o container está rodando:
-
-```bash
+Verificar:
 docker ps
-```
 
-Deve aparecer:
-
-```bash
-mapa-eventos-mysql
-```
+Container esperado:
+mapa-eventos-mongo
 
 ---
 
-# 5. Criar Estrutura do Banco
-
-Ainda na raiz do projeto:
-
-## Windows PowerShell
-
-```powershell
-Get-Content .\database\schema.sql | docker exec -i mapa-eventos-mysql mysql -u root -proot mapa_eventos
-```
-
----
-
-# 6. Inserir Dados Iniciais
-
-## Windows PowerShell
-
-```powershell
-Get-Content .\database\seed.sql | docker exec -i mapa-eventos-mysql mysql -u root -proot mapa_eventos
-```
-
----
-
-# 7. Configurar Variáveis de Ambiente
+## 4. Configurar .env (backend)
 
 Criar arquivo:
 
-```bash
 backend/.env
-```
 
-Conteúdo:
+Exemplo:
 
-```env
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=root
-DB_NAME=mapa_eventos
-```
+PORT=3000
+
+MONGO_URL=mongodb://admin:admin123@localhost:27017/mapa_eventos?authSource=admin
+
+SESSION_SECRET=mapa-eventos-secret
 
 ---
 
-# 8. Rodar Backend
+## 5. Rodar backend
 
-Entrar na pasta backend:
-
-```bash
 cd backend
-```
-
-Executar:
-
-```bash
 npm run dev
-```
 
-Servidor rodando em:
-
-```text
+Backend:
 http://localhost:3000
-```
 
 ---
 
-# 9. Rodar Frontend
+## 6. Rodar frontend
 
-Abrir outro terminal.
-
-Entrar na pasta frontend:
-
-```bash
 cd frontend
-```
-
-Executar:
-
-```bash
 npm run dev
-```
 
-Frontend rodando em:
-
-```text
+Frontend:
 http://localhost:5173
-```
 
 ---
 
-# Inicializações Futuras
+# 🔁 Uso diário
 
-Após a primeira configuração, basta:
-
----
-
-# 1. Subir Banco
-
-Na raiz do projeto:
-
-```bash
+## Subir banco
 docker compose up -d
-```
 
----
-
-# 2. Rodar Backend
-
-```bash
+## Rodar backend
 cd backend
 npm run dev
-```
 
----
-
-# 3. Rodar Frontend
-
-```bash
+## Rodar frontend
 cd frontend
 npm run dev
-```
 
 ---
 
-# Encerrar Aplicação
+# 🛑 Parar sistema
 
----
-
-## Parar Backend e Frontend
-
-Pressione:
-
-```bash
 CTRL + C
-```
 
----
-
-## Parar Banco Docker
-
-Na raiz do projeto:
-
-```bash
 docker compose down
-```
 
 ---
 
-# Scripts SQL
+# 🐳 Docker MongoDB
 
-## schema.sql
+## Subir
+docker compose up -d
 
-Responsável por criar as tabelas do banco.
+## Parar
+docker compose down
 
-## seed.sql
-
-Responsável por inserir dados iniciais para testes.
+## Reset total
+docker compose down -v
 
 ---
 
-# Estrutura Backend
+# 🧱 Estrutura Backend
 
-```bash
 backend/src/
-│
 ├── controllers/
 ├── routes/
+├── models/
 ├── services/
-├── database/
+├── config/
 └── app.js
-```
 
 ---
 
-# Estrutura Frontend
+# 🎨 Estrutura Frontend
 
-```bash
 frontend/src/
-│
 ├── components/
+├── pages/
 ├── services/
 ├── App.jsx
 └── main.jsx
-```
 
 ---
 
-# Comandos Úteis
+# 🔧 Comandos úteis
 
-## Ver containers ativos
-
-```bash
 docker ps
-```
-
----
-
-## Ver logs do MySQL
-
-```bash
-docker logs mapa-eventos-mysql
-```
-
----
-
-## Reiniciar banco
-
-```bash
+docker logs mapa-eventos-mongo
 docker compose restart
-```
 
 ---
 
-# Observações
+# ⚠️ Observações
 
-* Não subir node_modules para o Git.
-* Não subir arquivos .env.
-* Utilizar o arquivo .gitignore da raiz do projeto.
-* Backend e frontend devem ser executados separadamente.
+- Não subir node_modules
+- Não subir .env
+- Não usar migrations SQL
+- Banco agora é MongoDB com Mongoose
 
 ---
 
-# Fluxo Geral do Sistema
+---
 
-```text
+# 🌱 SEED DO BANCO DE DADOS (MONGODB)
+
+Este projeto possui um script de seed para popular o banco de dados com dados iniciais (usuários, eventos e stands).
+
+---
+
+## 📁 Local do seed
+
+```bash
+backend/src/seeds/seed.js
+
+# 🔄 Fluxo do sistema
+
 Frontend React
-    ↓
-Backend Express
-    ↓
-MySQL Docker
-```
+↓
+Backend Node + Express
+↓
+MongoDB (Docker local)

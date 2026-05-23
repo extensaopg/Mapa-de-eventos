@@ -35,5 +35,6 @@ async function enviarEmailReset(email, token) {
     })
 }
 module.exports = {
+    enviarEmailAtivacao,
     enviarEmailReset
 }

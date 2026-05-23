@@ -5,6 +5,7 @@ import AtivarConta from './pages/AtivarConta'
 import Login from './pages/Login'
 import Cadastro from './pages/Cadastro'
 import EsqueciSenha from './pages/EsqueciSenha'
+import ResetSenha from './pages/ResetSenha'
 
 function App() {
     return (
@@ -20,6 +21,8 @@ function App() {
                 <Route path="/cadastro" element={<Cadastro />} />
 
                 <Route path="/esqueci-senha" element={<EsqueciSenha />} />
+
+                <Route path="/reset-senha" element={<ResetSenha />} />
             </Routes>
         </BrowserRouter>
     )

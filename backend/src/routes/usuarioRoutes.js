@@ -5,7 +5,7 @@ const {
     criarUsuario,
     ativarConta,
     login,
-    esquecisSenha,
+    esqueciSenha,
     resetSenha
 } = require('../controllers/usuarioController')
 
