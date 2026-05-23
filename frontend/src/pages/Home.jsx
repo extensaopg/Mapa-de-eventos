@@ -11,8 +11,15 @@ function Home() {
         fetch('http://localhost:3000/usuarios/me', {
             credentials: 'include'
         })
-            .then(res => res.json())
-            .then(data => setUser(data))
+            .then(async (res) => {
+                if (res.status === 401) {
+                    setUser(null)
+                    return
+                }
+
+                const data = await res.json()
+                setUser(data)
+            })
             .catch(() => setUser(null))
     }, [])
 

@@ -225,12 +225,35 @@ async function me(req, res) {
         })
     }
 }
+async function logout(req, res) {
+    try {
+        req.session.destroy((err) => {
+            if (err) {
+                return res.status(500).json({
+                    message: 'Erro ao fazer logout'
+                })
+            }
 
+            res.clearCookie('connect.sid')
+
+            return res.json({
+                message: 'Logout realizado com sucesso'
+            })
+        })
+    } catch (error) {
+        console.error(error)
+
+        return res.status(500).json({
+            message: 'Erro ao fazer logout'
+        })
+    }
+}
 module.exports = {
     criarUsuario,
     ativarConta,
     login,
     esqueciSenha,
     resetSenha,
-    me
+    me,
+    logout
 }
