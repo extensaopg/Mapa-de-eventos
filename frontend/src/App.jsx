@@ -9,6 +9,7 @@ import ResetSenha from './pages/ResetSenha'
 import Home from './pages/Home.jsx'
 import MeusEventos from './pages/MeusEventos'
 import CriarEvento from './pages/CriarEvento'
+import EditarEvento from './pages/EditarEvento'
 
 function App() {
     return (
@@ -30,6 +31,8 @@ function App() {
                 <Route path="/meus-eventos" element={<MeusEventos />} />
                 
                 <Route path="/criar-evento" element={<CriarEvento />} />
+
+                <Route path="/editar-evento/:id" element={<EditarEvento />} />
             </Routes>
         </BrowserRouter>
     )
