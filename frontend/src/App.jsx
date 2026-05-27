@@ -7,6 +7,8 @@ import Cadastro from './pages/Cadastro'
 import EsqueciSenha from './pages/EsqueciSenha'
 import ResetSenha from './pages/ResetSenha'
 import Home from './pages/Home.jsx'
+import MeusEventos from './pages/MeusEventos'
+import CriarEvento from './pages/CriarEvento'
 
 function App() {
     return (
@@ -24,6 +26,10 @@ function App() {
                 <Route path="/esqueci-senha" element={<EsqueciSenha />} />
 
                 <Route path="/reset-senha" element={<ResetSenha />} />
+
+                <Route path="/meus-eventos" element={<MeusEventos />} />
+                
+                <Route path="/criar-evento" element={<CriarEvento />} />
             </Routes>
         </BrowserRouter>
     )
