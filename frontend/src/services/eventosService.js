@@ -7,5 +7,6 @@ export async function buscarEventos() {
         throw new Error('Erro ao buscar eventos');
     }
 
-    return response.json();
+    const eventos = response.json()
+    return eventos;
 }

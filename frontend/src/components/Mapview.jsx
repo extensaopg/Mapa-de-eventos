@@ -5,6 +5,13 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
 import { buscarEventos } from '../services/eventosService'
+import { buscarStands } from '../services/standsService' 
+
+import { eventoIcon, standIcon } from '../utils/mapIcons';
+import TracarRotaApe from './TracarRotaApe';
+import StandModal from './StandModal';
+
+
 // fix icon
 delete L.Icon.Default.prototype._getIconUrl
 
@@ -17,17 +24,6 @@ L.Icon.Default.mergeOptions({
         'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 })
 
-const eventoIcon = new L.Icon({
-    iconUrl:
-        'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
-    shadowUrl:
-        'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41],
-})
-
 function ChangeView({ center, zoom }) {
     const map = useMap()
 
@@ -35,7 +31,23 @@ function ChangeView({ center, zoom }) {
         if (center) {
             map.setView(center, zoom)
         }
-    }, [center, zoom])
+    }, [center, zoom, map])
+
+    return null
+}
+
+function AjusteDeCameraStands({ standsVisiveis }) {
+    const map = useMap()
+
+    useEffect(() => {
+        if (standsVisiveis.length > 0) {
+            const bounds = L.latLngBounds([])
+            standsVisiveis.forEach((stand) => {
+                bounds.extend([stand.latitude, stand.longitude])
+            })
+            map.fitBounds(bounds, { padding: [50, 50] })
+        }
+    }, [standsVisiveis, map])
 
     return null
 }
@@ -43,6 +55,11 @@ function ChangeView({ center, zoom }) {
 function MapView() {
     const [position, setPosition] = useState(null)
     const [eventos, setEventos] = useState([])
+    const [stands, setStands] = useState([])
+    const [eventoAtivoId, setEventoAtivoId] = useState(null)
+
+    const [destinoRota, setDestinoRota] = useState(null);
+    const [standSelecionado, setStandSelecionado] = useState(null);
 
     useEffect(() => {
         navigator.geolocation.getCurrentPosition(
@@ -53,28 +70,61 @@ function MapView() {
                 ])
             },
             (err) => console.error(err)
-        )
-    }, [])
+        );
 
-    useEffect(() => {
         async function load() {
-            const data = await buscarEventos()
-            setEventos(data)
+            setEventos(await buscarEventos())
+            setStands(await buscarStands())
         }
-
-        load()
+        load();
     }, [])
+
+    // Adicionado: Filtra os stands em tempo real com base no evento clicado
+    const standsVisiveis = stands.filter((stand) => stand.id_evento === eventoAtivoId)
 
     if (!position) return <p>Obtendo localização...</p>
+    const estiloBotaoPrincipal = {
+    padding: '6px 10px',
+    background: '#1976d2',
+    color: 'white',
+    border: 'none',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    width: '100%', // Ajuda a alinhar botões em popups
+    marginTop: '5px'
+    };
 
+    const estiloBotaoSecundario = {
+        padding: '6px 10px',
+        background: '#ffffff',
+        color: '#1976d2',
+        border: '1px solid #1976d2',
+        borderRadius: '6px',
+        cursor: 'pointer',
+        width: '100%',
+        marginTop: '5px'
+    };
     return (
+        <div style={{ position: 'relative', height: '100vh', width: '100%' }}>
+        
+        <StandModal 
+            stand={standSelecionado} 
+            onClose={() => setStandSelecionado(null)} 
+            onTracarRota={(coordenadas) => {
+                setDestinoRota(coordenadas);
+                setStandSelecionado(null);
+            }} 
+        />
         <MapContainer
             center={position}
             zoom={13}
             style={{ height: '100vh', width: '100%' }}
         >
             <ChangeView center={position} zoom={13} />
-
+            
+            <AjusteDeCameraStands standsVisiveis={standsVisiveis} />
+            
+            <TracarRotaApe origem={position} destino={destinoRota}/>
             <TileLayer
                 attribution="&copy; OpenStreetMap"
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -86,9 +136,11 @@ function MapView() {
             </Marker>
 
             {/* eventos */}
-            {eventos.map((evento) => (
+            {eventos.map((evento) => 
+            (
+                
                 <Marker
-                    key={evento.id}
+                    key={evento.id || evento._id}
                     position={[
                         evento.latitude,
                         evento.longitude,
@@ -105,25 +157,45 @@ function MapView() {
                         <br />
 
                         <button
+                            // Modificado: Atualiza o estado com o ID do evento clicado
                             onClick={() => {
-                                console.log('Evento selecionado:', evento.id)
+                                const idDoEvento = evento.id || evento._id;
+                                setEventoAtivoId(idDoEvento);
+                                setDestinoRota(null);
                             }}
-                            style={{
-                                padding: '6px 10px',
-                                background: '#1976d2',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '6px',
-                                cursor: 'pointer',
-                            }}
+                            style= {estiloBotaoPrincipal}
                         >
                             Ver stands desse evento
                         </button>
                     </Popup>
                 </Marker>
             ))}
-        </MapContainer>
 
+            {/* Adicionado: Renderização dinâmica dos stands do evento selecionado */}
+            {standsVisiveis.map((stand) => (
+                <Marker
+                    key={stand.id || stand._id}
+                    position={[
+                        stand.latitude,
+                        stand.longitude,
+                    ]}
+                    icon={standIcon}
+                >
+                    <Popup>
+                            <div style={{ textAlign: 'center' }}>
+                                <p><strong>{stand.descricao}</strong></p>
+                                <button onClick={(e) => { e.stopPropagation(); setStandSelecionado(stand); }} style={estiloBotaoPrincipal}>
+                                    Ver mais detalhes
+                                </button>
+                                <button onClick={(e) => { e.stopPropagation(); setDestinoRota([stand.latitude, stand.longitude]); }} style={estiloBotaoSecundario}>
+                                    Ir até o stand
+                                </button>
+                            </div>
+                    </Popup>
+                </Marker>
+            ))}
+        </MapContainer>
+        </div>
     )
 }
 
