@@ -25,6 +25,10 @@ function CriarEvento() {
     const [dataInicio, setDataInicio] = useState('')
     const [dataFim, setDataFim] = useState('')
     
+    // Novos Estados de Colaboradores
+    const [emailInput, setEmailInput] = useState('')
+    const [colaboradores, setColaboradores] = useState([])
+
     const [posicao, setPosicao] = useState(null)
     const [enderecoBusca, setEnderecoBusca] = useState('')
     const [sugestoes, setSugestoes] = useState([])
@@ -71,7 +75,23 @@ function CriarEvento() {
         setSugestoes([])
     }
 
-    // ALTERAÇÃO 1: A função de submit agora recebe a decisão de qual botão foi clicado
+    // Lógica para adicionar e remover pílulas de e-mail na interface
+    const adicionarColaborador = (e) => {
+        e.preventDefault()
+        if (!emailInput) return
+        if (colaboradores.includes(emailInput)) {
+            alert('Este e-mail já está na lista.')
+            return
+        }
+        setColaboradores([...colaboradores, emailInput])
+        setEmailInput('')
+    }
+
+    const removerColaborador = (emailParaRemover) => {
+        setColaboradores(colaboradores.filter(email => email !== emailParaRemover))
+    }
+
+    // Lógica original de salvar evento mantida, mas agora enviando os colaboradores
     const handleSalvarEvento = async (irParaStands) => {
         if (!posicao) {
             alert('Por favor, selecione a localização no mapa ou na lista.')
@@ -83,7 +103,8 @@ function CriarEvento() {
             data_inicio: dataInicio,
             data_fim: dataFim,
             latitude: posicao.lat,
-            longitude: posicao.lng
+            longitude: posicao.lng,
+            colaboradores // Envia a array de e-mails
         }
 
         try {
@@ -95,15 +116,18 @@ function CriarEvento() {
             })
 
             if (res.ok) {
-                // Como precisamos do ID para redirecionar para a criação de stands, 
-                // assumimos que o backend retorna o objeto recém-criado em JSON.
                 const eventoCriado = await res.json()
                 
-                alert('Evento criado com sucesso!')
+                // Formatação do alerta caso algum e-mail não exista no banco
+                let mensagemFinal = eventoCriado.message || 'Evento criado com sucesso!'
+                if (eventoCriado.emailsNaoEncontrados && eventoCriado.emailsNaoEncontrados.length > 0) {
+                    mensagemFinal += `\n\n⚠️ AVISO: Os seguintes e-mails não possuem conta cadastrada e não foram adicionados:\n- ${eventoCriado.emailsNaoEncontrados.join('\n- ')}`
+                }
                 
-                // ALTERAÇÃO 2: Lógica de redirecionamento duplo
+                alert(mensagemFinal)
+                
+                // O seu redirecionamento duplo preservado!
                 if (irParaStands) {
-                    // Ajuste a rota abaixo para o caminho real da sua tela de criar stands
                     navigate(`/eventos/${eventoCriado._id || eventoCriado.id}/stands/novo`) 
                 } else {
                     navigate('/meus-eventos')
@@ -125,7 +149,6 @@ function CriarEvento() {
                     <h2 style={styles.title}>Criar Novo Evento</h2>
                 </header>
                 
-                {/* O onSumbit nativo foi removido e trocado por event handlers nos botões para evitar recarregamento não planejado */}
                 <form style={styles.form}>
                     <div style={styles.inputGroup}>
                         <label style={styles.label}>Descrição do Evento</label>
@@ -141,6 +164,32 @@ function CriarEvento() {
                             <label style={styles.label}>Data de Fim</label>
                             <input type="date" required value={dataFim} onChange={e => setDataFim(e.target.value)} style={styles.input} />
                         </div>
+                    </div>
+
+                    {/* BLOCO NOVO: Colaboradores */}
+                    <div style={styles.inputGroup}>
+                        <label style={styles.label}>Adicionar Colaboradores (Opcional)</label>
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                            <input 
+                                type="email" 
+                                placeholder="E-mail do usuário cadastrado" 
+                                value={emailInput} 
+                                onChange={e => setEmailInput(e.target.value)} 
+                                style={styles.input} 
+                            />
+                            <button onClick={adicionarColaborador} style={styles.addBtn}>Adicionar</button>
+                        </div>
+                        
+                        {colaboradores.length > 0 && (
+                            <div style={styles.pillContainer}>
+                                {colaboradores.map((email, index) => (
+                                    <div key={index} style={styles.pill}>
+                                        {email}
+                                        <button type="button" onClick={() => removerColaborador(email)} style={styles.pillRemove}>×</button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     <div style={styles.inputGroup}>
@@ -179,7 +228,6 @@ function CriarEvento() {
                         </div>
                     </div>
 
-                    {/* ALTERAÇÃO 3: Os botões de submissão dispostos lado a lado */}
                     <div style={styles.btnContainer}>
                         <button 
                             type="button" 
@@ -218,11 +266,15 @@ const styles = {
     loadingText: { position: 'absolute', right: '12px', top: '14px', color: '#888', fontSize: '13px' },
     dropdown: { position: 'absolute', top: '100%', left: 0, right: 0, backgroundColor: 'white', border: '1px solid #EAEAEA', borderTop: 'none', borderRadius: '0 0 12px 12px', maxHeight: '200px', overflowY: 'auto', listStyle: 'none', padding: 0, margin: 0, zIndex: 1000, boxShadow: '0 8px 16px rgba(0,0,0,0.1)' },
     dropdownItem: { padding: '12px 16px', borderBottom: '1px solid #F4F6F8', cursor: 'pointer', fontSize: '14px', color: '#333' },
-    
-    // NOVOS ESTILOS PARA OS BOTÕES
     btnContainer: { display: 'flex', gap: '16px', marginTop: '10px' },
     submitBtnPrimary: { flex: 1, background: '#1976D2', color: '#fff', border: 'none', padding: '14px', borderRadius: '50px', cursor: 'pointer', fontSize: '16px', fontWeight: 'bold', boxShadow: '0 2px 8px rgba(25, 118, 210, 0.3)' },
-    submitBtnSecondary: { flex: 1, background: '#F0F7FF', color: '#1976D2', border: '1px solid #1976D2', padding: '14px', borderRadius: '50px', cursor: 'pointer', fontSize: '16px', fontWeight: 'bold' }
+    submitBtnSecondary: { flex: 1, background: '#F0F7FF', color: '#1976D2', border: '1px solid #1976D2', padding: '14px', borderRadius: '50px', cursor: 'pointer', fontSize: '16px', fontWeight: 'bold' },
+    
+    // Estilos do Colaborador
+    addBtn: { background: '#EAEAEA', color: '#333', border: 'none', padding: '0 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' },
+    pillContainer: { display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' },
+    pill: { background: '#E3F2FD', color: '#1976D2', padding: '6px 12px', borderRadius: '50px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600' },
+    pillRemove: { background: 'none', border: 'none', color: '#1976D2', cursor: 'pointer', fontSize: '16px', padding: 0, lineHeight: 1 }
 }
 
 export default CriarEvento
