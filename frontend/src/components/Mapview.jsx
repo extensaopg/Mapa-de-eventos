@@ -54,7 +54,7 @@ function AjusteDeCameraStands({ standsVisiveis }) {
 }
 
 function MapView() {
-    const [position, setPosition] = useState([null])
+    const [position, setPosition] = useState(null)
     const [eventos, setEventos] = useState([])
     const [stands, setStands] = useState([])
     const [eventoAtivoId, setEventoAtivoId] = useState(null)
@@ -66,23 +66,40 @@ function MapView() {
     const [termoBusca, setTermoBusca] = useState('');
 
     useEffect(() => {
-        navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    setPosition([
-                        pos.coords.latitude,
-                        pos.coords.longitude,
-                    ])
-                },
-                (err) => console.error(err)
-            );
         async function load() {
-            setEventos(await buscarEventos())
-            setStands(await buscarStands())
+            try {
+                setEventos(await buscarEventos());
+                setStands(await buscarStands());
+            } catch (error) {
+                console.error("Erro ao buscar dados da API:", error);
+            }
         }
+        
         load();
-    }, [])
+    }, []);
 
-    // Adicionado: Filtra os stands em tempo real com base no evento clicado
+    useEffect(() => {
+        const watchId = navigator.geolocation.watchPosition(
+            (pos) => {
+                setPosition([
+                    pos.coords.latitude,
+                    pos.coords.longitude,
+                ]);
+            },
+            (err) => console.error("Erro de GPS:", err),
+            {
+                enableHighAccuracy: true,
+                maximumAge: 0,
+                timeout: 5000
+            }
+        );
+
+        return () => {
+            navigator.geolocation.clearWatch(watchId);
+        };
+    }, []);
+
+
     const standsVisiveis = stands.filter((stand) => stand.id_evento === eventoAtivoId)
     const eventosFiltrados = eventos.filter(evento => 
         evento.descricao?.toLowerCase().includes(termoBusca.toLowerCase())

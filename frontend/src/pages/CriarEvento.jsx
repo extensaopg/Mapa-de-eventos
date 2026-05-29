@@ -71,9 +71,8 @@ function CriarEvento() {
         setSugestoes([])
     }
 
-    const handleSubmit = async (e) => {
-        e.preventDefault()
-
+    // ALTERAÇÃO 1: A função de submit agora recebe a decisão de qual botão foi clicado
+    const handleSalvarEvento = async (irParaStands) => {
         if (!posicao) {
             alert('Por favor, selecione a localização no mapa ou na lista.')
             return
@@ -96,8 +95,20 @@ function CriarEvento() {
             })
 
             if (res.ok) {
+                // Como precisamos do ID para redirecionar para a criação de stands, 
+                // assumimos que o backend retorna o objeto recém-criado em JSON.
+                const eventoCriado = await res.json()
+                
                 alert('Evento criado com sucesso!')
-                navigate('/meus-eventos')
+                
+                // ALTERAÇÃO 2: Lógica de redirecionamento duplo
+                if (irParaStands) {
+                    // Ajuste a rota abaixo para o caminho real da sua tela de criar stands
+                    navigate(`/eventos/${eventoCriado._id || eventoCriado.id}/stands/novo`) 
+                } else {
+                    navigate('/meus-eventos')
+                }
+                
             } else {
                 alert('Erro ao criar evento.')
             }
@@ -114,7 +125,8 @@ function CriarEvento() {
                     <h2 style={styles.title}>Criar Novo Evento</h2>
                 </header>
                 
-                <form onSubmit={handleSubmit} style={styles.form}>
+                {/* O onSumbit nativo foi removido e trocado por event handlers nos botões para evitar recarregamento não planejado */}
+                <form style={styles.form}>
                     <div style={styles.inputGroup}>
                         <label style={styles.label}>Descrição do Evento</label>
                         <input type="text" placeholder="Ex: Feira de Ciências" required value={descricao} onChange={e => setDescricao(e.target.value)} style={styles.input} />
@@ -167,7 +179,24 @@ function CriarEvento() {
                         </div>
                     </div>
 
-                    <button type="submit" style={styles.submitBtn}>Salvar Evento</button>
+                    {/* ALTERAÇÃO 3: Os botões de submissão dispostos lado a lado */}
+                    <div style={styles.btnContainer}>
+                        <button 
+                            type="button" 
+                            onClick={() => handleSalvarEvento(false)} 
+                            style={styles.submitBtnSecondary}
+                        >
+                            Salvar evento
+                        </button>
+                        
+                        <button 
+                            type="button" 
+                            onClick={() => handleSalvarEvento(true)} 
+                            style={styles.submitBtnPrimary}
+                        >
+                            Salvar evento & criar stands
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -186,10 +215,14 @@ const styles = {
     label: { fontSize: '14px', fontWeight: '600', color: '#444' },
     input: { padding: '12px 16px', borderRadius: '8px', border: '1px solid #D1D5DB', fontSize: '15px', outline: 'none', width: '100%', boxSizing: 'border-box', backgroundColor: '#FAFAFA' },
     mapWrapper: { height: '350px', width: '100%', borderRadius: '12px', overflow: 'hidden', border: '1px solid #EAEAEA', zIndex: 0 },
-    submitBtn: { background: '#1976D2', color: '#fff', border: 'none', padding: '14px', borderRadius: '50px', cursor: 'pointer', fontSize: '16px', fontWeight: 'bold', marginTop: '10px', boxShadow: '0 2px 8px rgba(25, 118, 210, 0.3)' },
     loadingText: { position: 'absolute', right: '12px', top: '14px', color: '#888', fontSize: '13px' },
     dropdown: { position: 'absolute', top: '100%', left: 0, right: 0, backgroundColor: 'white', border: '1px solid #EAEAEA', borderTop: 'none', borderRadius: '0 0 12px 12px', maxHeight: '200px', overflowY: 'auto', listStyle: 'none', padding: 0, margin: 0, zIndex: 1000, boxShadow: '0 8px 16px rgba(0,0,0,0.1)' },
-    dropdownItem: { padding: '12px 16px', borderBottom: '1px solid #F4F6F8', cursor: 'pointer', fontSize: '14px', color: '#333' }
+    dropdownItem: { padding: '12px 16px', borderBottom: '1px solid #F4F6F8', cursor: 'pointer', fontSize: '14px', color: '#333' },
+    
+    // NOVOS ESTILOS PARA OS BOTÕES
+    btnContainer: { display: 'flex', gap: '16px', marginTop: '10px' },
+    submitBtnPrimary: { flex: 1, background: '#1976D2', color: '#fff', border: 'none', padding: '14px', borderRadius: '50px', cursor: 'pointer', fontSize: '16px', fontWeight: 'bold', boxShadow: '0 2px 8px rgba(25, 118, 210, 0.3)' },
+    submitBtnSecondary: { flex: 1, background: '#F0F7FF', color: '#1976D2', border: '1px solid #1976D2', padding: '14px', borderRadius: '50px', cursor: 'pointer', fontSize: '16px', fontWeight: 'bold' }
 }
 
 export default CriarEvento
