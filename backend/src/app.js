@@ -4,6 +4,7 @@ const session = require('express-session')
 
 const eventoRoutes = require('./routes/eventoRoutes');
 const usuarioRoutes = require('./routes/usuarioRoutes')
+const standRoutes = require('./routes/standRoutes')
 
 const app = express();
 
@@ -31,4 +32,5 @@ app.get('/', (req, res) => {
 
 app.use('/eventos', eventoRoutes);
 app.use('/usuarios', usuarioRoutes)
+app.use('/stands', standRoutes)
 module.exports = app;

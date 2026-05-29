@@ -68,31 +68,34 @@ async function seed() {
         // ================= STANDS =================
         await Stand.insertMany([
             {
-                descricao: 'Stand de Inteligência Artificial',
+                nome: 'Stand de Inteligência Artificial',
+                descricao: 'Demonstrações de IA e machine learning',
                 data_inicio: new Date('2026-06-10'),
                 data_fim: new Date('2026-06-12'),
                 latitude: -12.201,
                 longitude: -38.97,
                 cor_icone: 'red',
-                id_evento: eventos[0]._id
+                eventoId: eventos[0]._id
             },
             {
-                descricao: 'Stand de Robótica',
+                nome: 'Stand de Robótica',
+                descricao: 'Robôs e automação industrial',
                 data_inicio: new Date('2026-06-10'),
                 data_fim: new Date('2026-06-12'),
                 latitude: -12.202,
                 longitude: -38.968,
                 cor_icone: 'blue',
-                id_evento: eventos[0]._id
+                eventoId: eventos[0]._id
             },
             {
-                descricao: 'Stand Indie Games',
+                nome: 'Stand Indie Games',
+                descricao: 'Jogos independentes da Bahia',
                 data_inicio: new Date('2026-07-01'),
                 data_fim: new Date('2026-07-03'),
                 latitude: -12.251,
                 longitude: -38.961,
                 cor_icone: 'green',
-                id_evento: eventos[1]._id
+                eventoId: eventos[1]._id
             }
         ])
 
