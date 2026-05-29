@@ -6,16 +6,16 @@ function MeusEventos() {
     const [loading, setLoading] = useState(true)
     const navigate = useNavigate()
 
-    useEffect(() => {
-        fetch('http://localhost:3000/usuarios/me', { credentials: 'include' })
-            .then(res => {
-                if (res.status === 401) {
-                    navigate('/login')
-                } else {
-                    return fetch('http://localhost:3000/eventos')
-                }
-            })
-            .then(res => res && res.json())
+   useEffect(() => {
+    fetch('http://localhost:3000/usuarios/me', { credentials: 'include' })
+        .then(res => {
+            if (res.status === 401) {
+                navigate('/login')
+            } else {
+                return fetch('http://localhost:3000/eventos/meus', { credentials: 'include' })
+            }
+        })
+        .then(res => res && res.json())
             .then(data => {
                 if (data) {
                     setEventos(data)
