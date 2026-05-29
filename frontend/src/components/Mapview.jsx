@@ -54,7 +54,7 @@ function AjusteDeCameraStands({ standsVisiveis }) {
 }
 
 function MapView() {
-    const [position, setPosition] = useState([])
+    const [position, setPosition] = useState([null])
     const [eventos, setEventos] = useState([])
     const [stands, setStands] = useState([])
     const [eventoAtivoId, setEventoAtivoId] = useState(null)
