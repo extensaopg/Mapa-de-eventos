@@ -2,32 +2,31 @@ const Evento = require('../models/Evento');
 
 async function criarEvento(req, res) {
     try {
-        const {
+        // 1. Verifica se o usuário está realmente logado antes de deixar criar
+        if (!req.session.user) {
+            return res.status(401).json({ message: 'Você precisa estar logado para criar um evento.' });
+        }
+
+        const { descricao, data_inicio, data_fim, latitude, longitude } = req.body;
+
+        // 2. Cria o evento injetando o ID do usuário logado na lista de administradores
+        const novoEvento = await Evento.create({
             descricao,
             data_inicio,
             data_fim,
             latitude,
             longitude,
-            administradores // Novo campo adicionado
-        } = req.body
+            administradores: [req.session.user.id] // 👈 O SEGREDO ESTÁ AQUI
+        });
 
-        const evento = await Evento.create({
-            descricao,
-            data_inicio,
-            data_fim,
-            latitude,
-            longitude,
-            administradores // Salva os IDs dos usuários responsáveis
-        })
-
-        res.status(201).json({
+        return res.status(201).json({
             message: 'Evento criado com sucesso',
-            id: evento._id
-        })
+            id: novoEvento._id
+        });
 
     } catch (error) {
-        console.error(error)
-        res.status(500).json({ error: 'Erro ao criar evento' })
+        console.error('Erro ao criar evento:', error);
+        return res.status(500).json({ message: 'Erro ao criar evento' });
     }
 }
 
@@ -88,6 +87,26 @@ async function atualizarEvento(req, res) {
     }
 }
 
+async function listarMeusEventos(req, res) {
+    try {
+        // Verifica se o usuário está logado
+        if (!req.session.user) {
+            return res.status(401).json({ error: 'Não autenticado' })
+        }
+
+        const userId = req.session.user.id
+
+        // Busca apenas eventos onde o userId está dentro do array de administradores
+        const eventos = await Evento.find({ administradores: userId })
+
+        res.json(eventos)
+
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({ error: 'Erro ao buscar eventos do usuário' })
+    }
+}
+
 async function deletarEvento(req, res) {
     try {
         const { id } = req.params
@@ -104,5 +123,6 @@ module.exports = {
     listarEventos,
     buscarEventoPorId,
     atualizarEvento,
-    deletarEvento
+    deletarEvento,
+    listarMeusEventos
 };

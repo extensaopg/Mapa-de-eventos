@@ -5,14 +5,17 @@ const router = express.Router();
 const {
     criarEvento,
     listarEventos,
+    listarMeusEventos,
     buscarEventoPorId,
     atualizarEvento,
-    deletarEvento
+    deletarEvento,
 } = require('../controllers/eventoController');
 
 router.post('/', criarEvento);
 
 router.get('/', listarEventos);
+
+router.get('/meus', listarMeusEventos);
 
 router.get('/:id', buscarEventoPorId);
 
