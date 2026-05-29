@@ -10,7 +10,7 @@ import { buscarStands } from '../services/standsService'
 import { eventoIcon, standIcon } from '../utils/mapIcons';
 import TracarRotaApe from './TracarRotaApe';
 import StandModal from './StandModal';
-import searchEventMap from './searchEventMap';
+import SearchEventMap from './SearchEventMap';
 
 
 // fix icon
@@ -67,15 +67,14 @@ function MapView() {
 
     useEffect(() => {
         navigator.geolocation.getCurrentPosition(
-            (pos) => {
-                setPosition([
-                    pos.coords.latitude,
-                    pos.coords.longitude,
-                ])
-            },
-            (err) => console.error(err)
-        );
-
+                (pos) => {
+                    setPosition([
+                        pos.coords.latitude,
+                        pos.coords.longitude,
+                    ])
+                },
+                (err) => console.error(err)
+            );
         async function load() {
             setEventos(await buscarEventos())
             setStands(await buscarStands())
@@ -114,10 +113,10 @@ function MapView() {
     return (
         <div style={{ position: 'relative', height: '100vh', width: '100%' }}>
 
-        <searchEventMap 
+        <SearchEventMap 
             eventos={eventos} 
             onSelectEvento={(evento) => {
-                // Controla o que acontece no mapa quando clica no resultado
+
                 setPosition([evento.latitude, evento.longitude]);
                 setEventoAtivoId(evento.id || evento._id);
                 setDestinoRota(null);

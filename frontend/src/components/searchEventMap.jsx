@@ -1,11 +1,10 @@
 import { useState } from 'react';
 
-export default function searchEventMap({ eventos, onSelectEvento }) {
+export default function SearchEventMap({ eventos, onSelectEvento }) {
     const [buscaAberta, setBuscaAberta] = useState(false);
     const [termoBusca, setTermoBusca] = useState('');
     const [itemFocadoId, setItemFocadoId] = useState(null);
 
-    // Filtra os eventos dinamicamente
     const eventosFiltrados = eventos.filter(evento => 
         evento.descricao?.toLowerCase().includes(termoBusca.toLowerCase())
     );
@@ -16,13 +15,12 @@ export default function searchEventMap({ eventos, onSelectEvento }) {
                 position: 'absolute',
                 top: '10px',
                 left: '50px', 
-                zIndex: 1000, // Fica acima do Leaflet, mas abaixo do Modal (9999)
+                zIndex: 1000,
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'flex-start',
                 fontFamily: 'sans-serif'
             }}
-            // Evita que cliques ou scrolls na busca movam o mapa atrás dela
             onMouseDown={(e) => e.stopPropagation()}
             onDoubleClick={(e) => e.stopPropagation()}
             onWheel={(e) => e.stopPropagation()}
@@ -67,7 +65,6 @@ export default function searchEventMap({ eventos, onSelectEvento }) {
                 )}
             </div>
 
-            {/* Lista suspensa de resultados */}
             {buscaAberta && termoBusca && (
                 <div style={{
                     background: 'white',
@@ -87,10 +84,7 @@ export default function searchEventMap({ eventos, onSelectEvento }) {
                                 <div
                                     key={idEvento}
                                     onClick={() => {
-                                        // Executa a função passada pelo componente pai
                                         onSelectEvento(evento);
-                                        
-                                        // Reseta a busca
                                         setTermoBusca('');
                                         setBuscaAberta(false);
                                     }}
