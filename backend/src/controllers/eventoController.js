@@ -1,31 +1,43 @@
 const Evento = require('../models/Evento');
+const Usuario = require('../models/Usuario'); 
 
 async function criarEvento(req, res) {
     try {
-        // 1. Verifica se o usuário está realmente logado antes de deixar criar
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Você precisa estar logado para criar um evento.' });
+        if (!req.session.user) return res.status(401).json({ message: 'Não autenticado' });
+
+        const { descricao, data_inicio, data_fim, latitude, longitude, colaboradores } = req.body;
+
+        // O criador sempre será um administrador
+        let administradoresIds = [req.session.user.id];
+        let emailsNaoEncontrados = [];
+
+        // Lógica de Colaboradores
+        if (colaboradores && colaboradores.length > 0) {
+            // Busca no banco os usuários que têm os e-mails enviados
+            const usuariosDb = await Usuario.find({ email: { $in: colaboradores } });
+            const emailsDb = usuariosDb.map(u => u.email);
+            
+            // Separa quem não foi encontrado
+            emailsNaoEncontrados = colaboradores.filter(email => !emailsDb.includes(email));
+            
+            // Junta o ID do criador com os IDs dos colaboradores encontrados (sem repetir)
+            const idsColaboradores = usuariosDb.map(u => u._id.toString());
+            administradoresIds = [...new Set([...administradoresIds, ...idsColaboradores])];
         }
 
-        const { descricao, data_inicio, data_fim, latitude, longitude } = req.body;
-
-        // 2. Cria o evento injetando o ID do usuário logado na lista de administradores
         const novoEvento = await Evento.create({
-            descricao,
-            data_inicio,
-            data_fim,
-            latitude,
-            longitude,
-            administradores: [req.session.user.id] // 👈 O SEGREDO ESTÁ AQUI
+            descricao, data_inicio, data_fim, latitude, longitude,
+            administradores: administradoresIds
         });
 
         return res.status(201).json({
             message: 'Evento criado com sucesso',
-            id: novoEvento._id
+            id: novoEvento._id,
+            emailsNaoEncontrados
         });
 
     } catch (error) {
-        console.error('Erro ao criar evento:', error);
+        console.error(error);
         return res.status(500).json({ message: 'Erro ao criar evento' });
     }
 }
@@ -43,47 +55,62 @@ async function listarEventos(req, res) {
 
 async function buscarEventoPorId(req, res) {
     try {
-        const { id } = req.params
-
-        // Adicionado o .populate() aqui também para a busca individual
-        const evento = await Evento.findById(id).populate('administradores', 'nome email')
-
-        if (!evento) {
-            return res.status(404).json({ error: 'Evento não encontrado' })
-        }
-
-        res.json(evento)
+        // Popula os administradores para devolver o e-mail deles ao frontend
+        const evento = await Evento.findById(req.params.id).populate({
+            path: 'administradores',
+            model: 'Usuario',
+            select: 'email'
+        });
+        
+        if (!evento) return res.status(404).json({ message: 'Evento não encontrado' });
+        res.json(evento);
     } catch (error) {
-        console.error(error)
-        res.status(500).json({ error: 'Erro ao buscar evento' })
+        console.error(error);
+        res.status(500).json({ message: 'Erro ao buscar evento' });
     }
 }
 
 async function atualizarEvento(req, res) {
     try {
-        const { id } = req.params
-        const {
-            descricao,
-            data_inicio,
-            data_fim,
-            latitude,
-            longitude,
-            administradores // Novo campo adicionado
-        } = req.body
+        if (!req.session.user) return res.status(401).json({ message: 'Não autenticado' });
 
-        await Evento.findByIdAndUpdate(id, {
-            descricao,
-            data_inicio,
-            data_fim,
-            latitude,
-            longitude,
-            administradores
-        })
+        const { descricao, data_inicio, data_fim, latitude, longitude, colaboradores } = req.body;
+        
+        const eventoExistente = await Evento.findById(req.params.id);
+        if (!eventoExistente) return res.status(404).json({ message: 'Evento não encontrado' });
 
-        res.json({ message: 'Evento atualizado com sucesso' })
+        // Apenas um admin pode editar
+        if (!eventoExistente.administradores.includes(req.session.user.id)) {
+            return res.status(403).json({ message: 'Sem permissão para editar este evento' });
+        }
+
+        let administradoresIds = [req.session.user.id];
+        let emailsNaoEncontrados = [];
+
+        if (colaboradores && colaboradores.length > 0) {
+            const usuariosDb = await Usuario.find({ email: { $in: colaboradores } });
+            const emailsDb = usuariosDb.map(u => u.email);
+            
+            emailsNaoEncontrados = colaboradores.filter(email => !emailsDb.includes(email));
+            
+            const idsColaboradores = usuariosDb.map(u => u._id.toString());
+            administradoresIds = [...new Set([...administradoresIds, ...idsColaboradores])];
+        }
+
+        const eventoAtualizado = await Evento.findByIdAndUpdate(
+            req.params.id,
+            { descricao, data_inicio, data_fim, latitude, longitude, administradores: administradoresIds },
+            { new: true }
+        );
+
+        return res.json({
+            message: 'Evento atualizado com sucesso',
+            emailsNaoEncontrados
+        });
+
     } catch (error) {
-        console.error(error)
-        res.status(500).json({ error: 'Erro ao atualizar evento' })
+        console.error(error);
+        return res.status(500).json({ message: 'Erro ao atualizar evento' });
     }
 }
 

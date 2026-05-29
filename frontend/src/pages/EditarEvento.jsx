@@ -29,6 +29,10 @@ function EditarEvento() {
     const [posicao, setPosicao] = useState(null)
     const [loading, setLoading] = useState(true)
     
+    const [emailInput, setEmailInput] = useState('')
+    const [colaboradores, setColaboradores] = useState([])
+    const [meuEmail, setMeuEmail] = useState('')
+
     const [enderecoBusca, setEnderecoBusca] = useState('')
     const [sugestoes, setSugestoes] = useState([])
     const [buscando, setBuscando] = useState(false)
@@ -37,7 +41,9 @@ function EditarEvento() {
         fetch('http://localhost:3000/usuarios/me', { credentials: 'include' })
             .then(res => {
                 if (res.status === 401) navigate('/login')
+                return res.json()
             })
+            .then(data => { if(data) setMeuEmail(data.email) })
     }, [navigate])
 
     useEffect(() => {
@@ -50,6 +56,14 @@ function EditarEvento() {
                     setDataInicio(data.data_inicio.split('T')[0])
                     setDataFim(data.data_fim.split('T')[0])
                     setPosicao({ lat: data.latitude, lng: data.longitude })
+                    
+                    if (data.administradores && meuEmail) {
+                        const listaEmails = data.administradores
+                            .filter(admin => admin.email !== meuEmail)
+                            .map(admin => admin.email)
+                        setColaboradores(listaEmails)
+                    }
+
                     setLoading(false)
                 } else {
                     alert('Evento não encontrado.')
@@ -61,8 +75,8 @@ function EditarEvento() {
                 navigate('/meus-eventos')
             }
         }
-        fetchEvento()
-    }, [id, navigate])
+        if (meuEmail) fetchEvento()
+    }, [id, navigate, meuEmail])
 
     useEffect(() => {
         const buscarSugestoesNaApi = async (query) => {
@@ -98,6 +112,20 @@ function EditarEvento() {
         setSugestoes([])
     }
 
+    const adicionarColaborador = (e) => {
+        e.preventDefault()
+        if (!emailInput) return
+        if (emailInput === meuEmail) return alert('Você já é administrador deste evento.')
+        if (colaboradores.includes(emailInput)) return alert('Este e-mail já está na lista.')
+        
+        setColaboradores([...colaboradores, emailInput])
+        setEmailInput('')
+    }
+
+    const removerColaborador = (emailParaRemover) => {
+        setColaboradores(colaboradores.filter(email => email !== emailParaRemover))
+    }
+
     const handleSubmit = async (e) => {
         e.preventDefault()
 
@@ -111,7 +139,8 @@ function EditarEvento() {
             data_inicio: dataInicio,
             data_fim: dataFim,
             latitude: posicao.lat,
-            longitude: posicao.lng
+            longitude: posicao.lng,
+            colaboradores
         }
 
         try {
@@ -123,7 +152,14 @@ function EditarEvento() {
             })
 
             if (res.ok) {
-                alert('Evento atualizado com sucesso!')
+                const data = await res.json()
+                let mensagemFinal = data.message || 'Evento atualizado com sucesso!'
+                
+                if (data.emailsNaoEncontrados && data.emailsNaoEncontrados.length > 0) {
+                    mensagemFinal += `\n\n⚠️ AVISO: Os seguintes e-mails não possuem conta cadastrada e não foram adicionados:\n- ${data.emailsNaoEncontrados.join('\n- ')}`
+                }
+                
+                alert(mensagemFinal)
                 navigate('/meus-eventos')
             } else {
                 alert('Erro ao atualizar evento.')
@@ -160,6 +196,31 @@ function EditarEvento() {
                             <label style={styles.label}>Data de Fim</label>
                             <input type="date" required value={dataFim} onChange={e => setDataFim(e.target.value)} style={styles.input} />
                         </div>
+                    </div>
+
+                    <div style={styles.inputGroup}>
+                        <label style={styles.label}>Gerenciar Colaboradores</label>
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                            <input 
+                                type="email" 
+                                placeholder="E-mail do usuário cadastrado" 
+                                value={emailInput} 
+                                onChange={e => setEmailInput(e.target.value)} 
+                                style={styles.input} 
+                            />
+                            <button onClick={adicionarColaborador} style={styles.addBtn}>Adicionar</button>
+                        </div>
+                        
+                        {colaboradores.length > 0 && (
+                            <div style={styles.pillContainer}>
+                                {colaboradores.map((email, index) => (
+                                    <div key={index} style={styles.pill}>
+                                        {email}
+                                        <button type="button" onClick={() => removerColaborador(email)} style={styles.pillRemove}>×</button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     <div style={styles.inputGroup}>
@@ -214,11 +275,16 @@ const styles = {
     label: { fontSize: '14px', fontWeight: '600', color: '#444' },
     input: { padding: '12px 16px', borderRadius: '8px', border: '1px solid #D1D5DB', fontSize: '15px', outline: 'none', width: '100%', boxSizing: 'border-box', backgroundColor: '#FAFAFA' },
     mapWrapper: { height: '350px', width: '100%', borderRadius: '12px', overflow: 'hidden', border: '1px solid #EAEAEA', zIndex: 0 },
-    // O botão principal na tela de edição usa a cor amarela/mostarda
     submitBtn: { background: '#F59E0B', color: '#FFF', border: 'none', padding: '14px', borderRadius: '50px', cursor: 'pointer', fontSize: '16px', fontWeight: 'bold', marginTop: '10px', boxShadow: '0 2px 8px rgba(245, 158, 11, 0.3)' },
     loadingText: { position: 'absolute', right: '12px', top: '14px', color: '#888', fontSize: '13px' },
     dropdown: { position: 'absolute', top: '100%', left: 0, right: 0, backgroundColor: 'white', border: '1px solid #EAEAEA', borderTop: 'none', borderRadius: '0 0 12px 12px', maxHeight: '200px', overflowY: 'auto', listStyle: 'none', padding: 0, margin: 0, zIndex: 1000, boxShadow: '0 8px 16px rgba(0,0,0,0.1)' },
-    dropdownItem: { padding: '12px 16px', borderBottom: '1px solid #F4F6F8', cursor: 'pointer', fontSize: '14px', color: '#333' }
+    dropdownItem: { padding: '12px 16px', borderBottom: '1px solid #F4F6F8', cursor: 'pointer', fontSize: '14px', color: '#333' },
+    
+    // Estilos do Colaborador
+    addBtn: { background: '#EAEAEA', color: '#333', border: 'none', padding: '0 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' },
+    pillContainer: { display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' },
+    pill: { background: '#E3F2FD', color: '#1976D2', padding: '6px 12px', borderRadius: '50px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600' },
+    pillRemove: { background: 'none', border: 'none', color: '#1976D2', cursor: 'pointer', fontSize: '16px', padding: 0, lineHeight: 1 }
 }
 
 export default EditarEvento
