@@ -10,6 +10,7 @@ import { buscarStands } from '../services/standsService'
 import { eventoIcon, standIcon } from '../utils/mapIcons';
 import TracarRotaApe from './TracarRotaApe';
 import StandModal from './StandModal';
+import searchEventMap from './searchEventMap';
 
 
 // fix icon
@@ -53,13 +54,16 @@ function AjusteDeCameraStands({ standsVisiveis }) {
 }
 
 function MapView() {
-    const [position, setPosition] = useState(null)
+    const [position, setPosition] = useState([])
     const [eventos, setEventos] = useState([])
     const [stands, setStands] = useState([])
     const [eventoAtivoId, setEventoAtivoId] = useState(null)
 
     const [destinoRota, setDestinoRota] = useState(null);
     const [standSelecionado, setStandSelecionado] = useState(null);
+
+    const [buscaAberta, setBuscaAberta] = useState(false);
+    const [termoBusca, setTermoBusca] = useState('');
 
     useEffect(() => {
         navigator.geolocation.getCurrentPosition(
@@ -81,6 +85,9 @@ function MapView() {
 
     // Adicionado: Filtra os stands em tempo real com base no evento clicado
     const standsVisiveis = stands.filter((stand) => stand.id_evento === eventoAtivoId)
+    const eventosFiltrados = eventos.filter(evento => 
+        evento.descricao?.toLowerCase().includes(termoBusca.toLowerCase())
+    );
 
     if (!position) return <p>Obtendo localização...</p>
     const estiloBotaoPrincipal = {
@@ -106,7 +113,18 @@ function MapView() {
     };
     return (
         <div style={{ position: 'relative', height: '100vh', width: '100%' }}>
-        
+
+        <searchEventMap 
+            eventos={eventos} 
+            onSelectEvento={(evento) => {
+                // Controla o que acontece no mapa quando clica no resultado
+                setPosition([evento.latitude, evento.longitude]);
+                setEventoAtivoId(evento.id || evento._id);
+                setDestinoRota(null);
+                console.log(`[LOG] Buscado e focado em: ${evento.descricao}`);
+            }}
+        />
+
         <StandModal 
             stand={standSelecionado} 
             onClose={() => setStandSelecionado(null)} 
