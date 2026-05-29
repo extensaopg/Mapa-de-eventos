@@ -126,9 +126,7 @@ function EditarEvento() {
         setColaboradores(colaboradores.filter(email => email !== emailParaRemover))
     }
 
-    const handleSubmit = async (e) => {
-        e.preventDefault()
-
+    const handleSalvarEvento = async (irParaStands) => {
         if (!posicao) {
             alert('Por favor, selecione a localização no mapa ou na lista.')
             return
@@ -160,7 +158,13 @@ function EditarEvento() {
                 }
                 
                 alert(mensagemFinal)
-                navigate('/meus-eventos')
+                
+                if (irParaStands){
+                    navigate(`/eventos/${id}/stands`) 
+                } else{
+                    navigate('/meus-eventos')
+                }
+                
             } else {
                 alert('Erro ao atualizar evento.')
             }
@@ -181,7 +185,8 @@ function EditarEvento() {
                     <h2 style={styles.title}>Editar Evento</h2>
                 </header>
                 
-                <form onSubmit={handleSubmit} style={styles.form}>
+                {/* Removido o onSubmit nativo para gerenciar a ação exclusivamente pelos botões */}
+                <form style={styles.form} onSubmit={(e) => e.preventDefault()}>
                     <div style={styles.inputGroup}>
                         <label style={styles.label}>Descrição do Evento</label>
                         <input type="text" required value={descricao} onChange={e => setDescricao(e.target.value)} style={styles.input} />
@@ -256,7 +261,24 @@ function EditarEvento() {
                         </div>
                     </div>
 
-                    <button type="submit" style={styles.submitBtn}>Salvar Alterações</button>
+                    {/* ALTERAÇÃO 3: Estrutura de botões duplos lado a lado com pesos e cores diferentes */}
+                    <div style={styles.btnContainer}>
+                        <button 
+                            type="button" 
+                            onClick={() => handleSalvarEvento(false)} 
+                            style={styles.submitBtnSecondary}
+                        >
+                            Salvar Alterações
+                        </button>
+                        
+                        <button 
+                            type="button" 
+                            onClick={() => handleSalvarEvento(true)} 
+                            style={styles.submitBtnPrimary}
+                        >
+                            Salvar & Editar Stands
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -280,11 +302,13 @@ const styles = {
     dropdown: { position: 'absolute', top: '100%', left: 0, right: 0, backgroundColor: 'white', border: '1px solid #EAEAEA', borderTop: 'none', borderRadius: '0 0 12px 12px', maxHeight: '200px', overflowY: 'auto', listStyle: 'none', padding: 0, margin: 0, zIndex: 1000, boxShadow: '0 8px 16px rgba(0,0,0,0.1)' },
     dropdownItem: { padding: '12px 16px', borderBottom: '1px solid #F4F6F8', cursor: 'pointer', fontSize: '14px', color: '#333' },
     
-    // Estilos do Colaborador
     addBtn: { background: '#EAEAEA', color: '#333', border: 'none', padding: '0 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' },
     pillContainer: { display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' },
     pill: { background: '#E3F2FD', color: '#1976D2', padding: '6px 12px', borderRadius: '50px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600' },
-    pillRemove: { background: 'none', border: 'none', color: '#1976D2', cursor: 'pointer', fontSize: '16px', padding: 0, lineHeight: 1 }
+    pillRemove: { background: 'none', border: 'none', color: '#1976D2', cursor: 'pointer', fontSize: '16px', padding: 0, lineHeight: 1 },
+    btnContainer: { display: 'flex', gap: '16px', marginTop: '10px' },
+    submitBtnPrimary: { flex: 1, background: '#1976D2', color: '#FFF', border: 'none', padding: '14px', borderRadius: '50px', cursor: 'pointer', fontSize: '16px', fontWeight: 'bold', boxShadow: '0 2px 8px rgba(25, 118, 210, 0.3)' },
+    submitBtnSecondary: { flex: 1, background: '#F59E0B', color: '#FFF', border: 'none', padding: '14px', borderRadius: '50px', cursor: 'pointer', fontSize: '16px', fontWeight: 'bold', boxShadow: '0 2px 8px rgba(245, 158, 11, 0.3)' }
 }
 
 export default EditarEvento

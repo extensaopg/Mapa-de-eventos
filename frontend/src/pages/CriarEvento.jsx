@@ -126,9 +126,8 @@ function CriarEvento() {
                 
                 alert(mensagemFinal)
                 
-                // O seu redirecionamento duplo preservado!
                 if (irParaStands) {
-                    navigate(`/eventos/${eventoCriado._id || eventoCriado.id}/stands/novo`) 
+                    navigate(`/eventos/${eventoCriado._id || eventoCriado.id}/stands`) 
                 } else {
                     navigate('/meus-eventos')
                 }

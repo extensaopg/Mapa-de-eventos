@@ -10,6 +10,7 @@ import Home from './pages/Home.jsx'
 import MeusEventos from './pages/MeusEventos'
 import CriarEvento from './pages/CriarEvento'
 import EditarEvento from './pages/EditarEvento'
+import GerenciarStands from './pages/GerenciarStands'
 
 function App() {
     return (
@@ -33,6 +34,8 @@ function App() {
                 <Route path="/criar-evento" element={<CriarEvento />} />
 
                 <Route path="/editar-evento/:id" element={<EditarEvento />} />
+
+                <Route path="/eventos/:eventoId/stands" element={<GerenciarStands />} />
             </Routes>
         </BrowserRouter>
     )
