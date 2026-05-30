@@ -4,7 +4,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaf
 import 'leaflet/dist/leaflet.css'
 
 import { eventoIcon, standIcon, novoStandIcon } from '../utils/mapIcons'
-import StandFormModal from '../components/StandFormModal' // Ajuste o caminho conforme sua pasta
+import StandFormModal from '../components/StandFormModal' 
 
 function MapClickHandler({ setMarcadorTemporario }) {
     useMapEvents({
@@ -14,6 +14,7 @@ function MapClickHandler({ setMarcadorTemporario }) {
 }
 
 export default function GerenciarStands() {
+    const url_api = `${import.meta.env.VITE_API_URL}`
     const navigate = useNavigate()
     const { eventoId } = useParams()
 
@@ -40,34 +41,19 @@ export default function GerenciarStands() {
         }
     }, [marcadorTemporario])
 
-    // --- MOCK DO CARREGAMENTO INICIAL ---
     useEffect(() => {
-        // Simulando um delay de rede de 500ms
-        setTimeout(() => {
-            // Fake Evento
-            setEvento({
-                _id: eventoId || '123',
-                descricao: 'Feira de Ciências e Tecnologia (Modo Teste)',
-                latitude: -11.663, 
-                longitude: -38.976,
-                data_inicio: '2026-10-10T00:00:00Z',
-                data_fim: '2026-10-12T00:00:00Z'
-            });
-
-            // Fake Stands já existentes
-            setStands([
-                {
-                    _id: 'stand-fake-1',
-                    nome: 'Robótica Aplicada',
-                    descricao: 'Apresentação de braços robóticos construídos pelos alunos.',
-                    data_inicio: '2026-10-10T00:00:00Z',
-                    data_fim: '2026-10-12T00:00:00Z',
-                    latitude: -11.6635,
-                    longitude: -38.9765
+        const carregarDados = async () => {
+                try {
+                    const resEvento = await fetch(`${url_api}/eventos/${eventoId}`, { credentials: 'include' })
+                    if (resEvento.ok) setEvento(await resEvento.json())
+                    const resStands = await fetch(`${url_api}/stands/?eventoId=${eventoId}`, { credentials: 'include' })
+                    if (resStands.ok) setStands(await resStands.json())
+                } catch (error) {
+                    console.error("Erro ao carregar dados da API:", error)
                 }
-            ]);
-        }, 500);
-    }, [eventoId])
+            }
+            carregarDados()
+        }, [eventoId])
 
     const iniciarCriacaoStand = () => {
         setStandEmEdicao(null)
@@ -80,7 +66,7 @@ export default function GerenciarStands() {
 
     const iniciarEdicaoStand = (stand) => {
         setStandEmEdicao(stand)
-        setNome(stand.nome || '') // Carrega o nome
+        setNome(stand.nome || '') 
         setDescricao(stand.descricao)
         setDataInicio(stand.data_inicio.split('T')[0])
         setDataFim(stand.data_fim.split('T')[0])
@@ -88,52 +74,72 @@ export default function GerenciarStands() {
         setModalAberto(true)
     }
 
-    // --- MOCK DO SALVAMENTO (CREATE / UPDATE) ---
-    const handleSalvarStand = (e) => {
+    const handleSalvarStand = async (e) => {
         e.preventDefault()
 
-        const payloadQueIriaProBackend = {
+        const payload = {
             nome,
             descricao, 
             data_inicio: dataInicio, 
             data_fim: dataFim,
-            eventoId: eventoId || '123', 
+            eventoId: eventoId, 
             cor_icone: 'blue',
             latitude: standEmEdicao ? standEmEdicao.latitude : marcadorTemporario.lat,
             longitude: standEmEdicao ? standEmEdicao.longitude : marcadorTemporario.lng
         }
 
-        // LOG PARA VOCÊ INSPECIONAR: Isso é o que a sua API vai receber!
-        console.log("🚀 Payload pronto para ser enviado:", payloadQueIriaProBackend);
+        try {
+            const isEdicao = !!standEmEdicao
+            const url = isEdicao ? `${url_api}/stands/${standEmEdicao._id}` : `${url_api}/stands`
+            
+            const res = await fetch(url, {
+                method: isEdicao ? 'PUT' : 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+                credentials: 'include'
+            })
 
-        const isEdicao = !!standEmEdicao
+            if (res.ok) {
+                const resStand = await res.json()
+                
+                if (isEdicao) {
+                    const standSalvo = await (await fetch(`${url_api}/stands/${standEmEdicao._id}`, { credentials: 'include' })).json()
+                    setStands(stands.map(s => s._id === standSalvo._id ? standSalvo : s))
+                } else {
 
-        // Simula o objeto que a API devolveria (adicionando um _id falso)
-        const standSalvo = {
-            ...payloadQueIriaProBackend,
-            _id: isEdicao ? standEmEdicao._id : `novo-stand-${Date.now()}`
+                    const standSalvo = await (await fetch(`${url_api}/stands/${resStand.id}`, { credentials: 'include' })).json()
+                    setStands([...stands, standSalvo])
+                }
+
+                alert(`Stand ${isEdicao ? 'atualizado' : 'criado'} com sucesso!`)
+                setModalAberto(false)
+                setMarcadorTemporario(null)
+            } else {
+                alert('Erro ao processar a requisição no backend.')
+            }
+        } catch (error) {
+            console.error('Erro de conexão:', error)
         }
-
-        if (isEdicao) {
-            setStands(stands.map(s => s._id === standSalvo._id ? standSalvo : s))
-        } else {
-            setStands([...stands, standSalvo])
-        }
-
-        alert(`[TESTE] Stand ${isEdicao ? 'atualizado' : 'criado'} com sucesso no modo local!`)
-        setModalAberto(false)
-        setMarcadorTemporario(null)
     }
 
-    // --- MOCK DA EXCLUSÃO ---
-    const handleExcluirStand = (standId) => {
+    const handleExcluirStand = async (standId) => {
         if (!window.confirm('Tem certeza que deseja excluir este stand?')) return
-        
-        console.log(`🗑️ Requisição DELETE seria enviada para /stands/${standId}`);
-        
-        // Remove visualmente
-        setStands(stands.filter(s => s._id !== standId))
-        alert('[TESTE] Stand excluído localmente.')
+
+        try {
+            const res = await fetch(`${url_api}/stands/${standId}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            })
+
+            if (res.ok) {
+                setStands(stands.filter(s => s._id !== standId))
+                alert('Stand excluído com sucesso.')
+            } else {
+                alert('Falha ao excluir o stand no backend.')
+            }
+        } catch (error) {
+            console.error('Erro de conexão:', error)
+        }
     }
 
     if (!evento) return <div style={styles.loading}>Carregando mapa do evento...</div>
@@ -144,7 +150,7 @@ export default function GerenciarStands() {
                 <header style={styles.headerAbsolute}>
                     <button onClick={() => navigate('/meus-eventos')} style={styles.backBtn}>← Finalizar e Voltar</button>
                     <div>
-                        <h2 style={styles.title}>Alocação de Stands (Modo de Teste)</h2>
+                        <h2 style={styles.title}>Alocação de Stands</h2>
                         <p style={styles.subtitle}>{evento.descricao}</p>
                     </div>
                 </header>

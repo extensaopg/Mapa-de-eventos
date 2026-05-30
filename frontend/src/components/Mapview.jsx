@@ -100,7 +100,7 @@ function MapView() {
     }, []);
 
 
-    const standsVisiveis = stands.filter((stand) => stand.id_evento === eventoAtivoId)
+    const standsVisiveis = stands.filter((stand) => stand.eventoId === eventoAtivoId)
     const eventosFiltrados = eventos.filter(evento => 
         evento.descricao?.toLowerCase().includes(termoBusca.toLowerCase())
     );
@@ -127,6 +127,39 @@ function MapView() {
         width: '100%',
         marginTop: '5px'
     };
+
+        // Função que intercepta o clique antes de desenhar a rota
+    const handleTraçarRotaApe = (stand) => {
+        if (!position) {
+            alert("Aguarde, ainda estamos buscando sua localização exata.");
+            return;
+        }
+
+        // Cria objetos de coordenada do Leaflet para o usuário e para o stand
+        // Nota: Lembre-se que o nosso estado position é um array [lat, lng]
+        const userLatLng = L.latLng(position[0], position[1]);
+        const standLatLng = L.latLng(stand.latitude, stand.longitude);
+
+        // O Leaflet calcula a distância mágica em metros
+        const distanciaEmMetros = userLatLng.distanceTo(standLatLng);
+
+        // Verifica o limite de 1 km (1000 metros)
+        if (distanciaEmMetros > 1000) {
+            // Converte para km apenas para mostrar no aviso de forma elegante
+            const distanciaEmKm = (distanciaEmMetros / 1000).toFixed(1);
+            
+            alert(`📍 Stand muito distante!\n\nEste stand está a aproximadamente ${distanciaEmKm} km de você. O limite para rotas a pé no campus é de 1 km.`);
+            
+            // O "return" vazio mata a função aqui e impede a rota de ser traçada
+            return; 
+        }
+        
+        setDestinoRota([stand.latitude, stand.longitude]);
+        // Se chegou até aqui, passou no teste! 
+        // Coloque aqui o estado/código que você já usava para ativar a linha azul da rota
+        // Exemplo: setStandDestino(stand);
+    }
+
     return (
         <div style={{ position: 'relative', height: '100vh', width: '100%' }}>
 
@@ -137,7 +170,6 @@ function MapView() {
                 setPosition([evento.latitude, evento.longitude]);
                 setEventoAtivoId(evento.id || evento._id);
                 setDestinoRota(null);
-                console.log(`[LOG] Buscado e focado em: ${evento.descricao}`);
             }}
         />
 
@@ -191,7 +223,6 @@ function MapView() {
                         <br />
 
                         <button
-                            // Modificado: Atualiza o estado com o ID do evento clicado
                             onClick={() => {
                                 const idDoEvento = evento.id || evento._id;
                                 setEventoAtivoId(idDoEvento);
@@ -205,7 +236,6 @@ function MapView() {
                 </Marker>
             ))}
 
-            {/* Adicionado: Renderização dinâmica dos stands do evento selecionado */}
             {standsVisiveis.map((stand) => (
                 <Marker
                     key={stand.id || stand._id}
@@ -221,7 +251,7 @@ function MapView() {
                                 <button onClick={(e) => { e.stopPropagation(); setStandSelecionado(stand); }} style={estiloBotaoPrincipal}>
                                     Ver mais detalhes
                                 </button>
-                                <button onClick={(e) => { e.stopPropagation(); setDestinoRota([stand.latitude, stand.longitude]); }} style={estiloBotaoSecundario}>
+                                <button onClick={() => handleTraçarRotaApe(stand)} style={estiloBotaoSecundario}>
                                     Ir até o stand
                                 </button>
                             </div>

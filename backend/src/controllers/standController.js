@@ -59,9 +59,7 @@ async function listarStands(req, res) {
             filtro.eventoId = req.query.eventoId
         }
 
-        const stands = await Stand.find(filtro)
-            .populate('eventoId', 'descricao data_inicio data_fim')
-            .sort({ createdAt: -1 })
+        const stands = await Stand.find(filtro).sort({ createdAt: -1 })
 
         return res.json(stands)
 
