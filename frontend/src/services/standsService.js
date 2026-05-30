@@ -8,6 +8,5 @@ export async function buscarStands() {
     }
 
     const stands = await response.json()
-    console.log(stands)
     return stands;
 }

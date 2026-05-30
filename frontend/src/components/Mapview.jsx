@@ -128,36 +128,26 @@ function MapView() {
         marginTop: '5px'
     };
 
-        // Função que intercepta o clique antes de desenhar a rota
     const handleTraçarRotaApe = (stand) => {
         if (!position) {
             alert("Aguarde, ainda estamos buscando sua localização exata.");
             return;
         }
-
-        // Cria objetos de coordenada do Leaflet para o usuário e para o stand
-        // Nota: Lembre-se que o nosso estado position é um array [lat, lng]
         const userLatLng = L.latLng(position[0], position[1]);
         const standLatLng = L.latLng(stand.latitude, stand.longitude);
 
-        // O Leaflet calcula a distância mágica em metros
         const distanciaEmMetros = userLatLng.distanceTo(standLatLng);
 
-        // Verifica o limite de 1 km (1000 metros)
+
         if (distanciaEmMetros > 1000) {
-            // Converte para km apenas para mostrar no aviso de forma elegante
             const distanciaEmKm = (distanciaEmMetros / 1000).toFixed(1);
             
-            alert(`📍 Stand muito distante!\n\nEste stand está a aproximadamente ${distanciaEmKm} km de você. O limite para rotas a pé no campus é de 1 km.`);
-            
-            // O "return" vazio mata a função aqui e impede a rota de ser traçada
+            alert(`📍 Stand muito distante!\n\nEste stand está a aproximadamente ${distanciaEmKm} km de você.`);
+
             return; 
         }
         
         setDestinoRota([stand.latitude, stand.longitude]);
-        // Se chegou até aqui, passou no teste! 
-        // Coloque aqui o estado/código que você já usava para ativar a linha azul da rota
-        // Exemplo: setStandDestino(stand);
     }
 
     return (
@@ -225,6 +215,7 @@ function MapView() {
                         <button
                             onClick={() => {
                                 const idDoEvento = evento.id || evento._id;
+                                console.log("Teste de clique")
                                 setEventoAtivoId(idDoEvento);
                                 setDestinoRota(null);
                             }}
