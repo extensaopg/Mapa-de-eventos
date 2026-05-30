@@ -1,18 +1,21 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+const API_URL = import.meta.env.VITE_API_URL;
+
+
 function MeusEventos() {
     const [eventos, setEventos] = useState([])
     const [loading, setLoading] = useState(true)
     const navigate = useNavigate()
 
    useEffect(() => {
-    fetch('http://localhost:3000/usuarios/me', { credentials: 'include' })
+    fetch(`${API_URL}/usuarios/me`, { credentials: 'include' })
         .then(res => {
             if (res.status === 401) {
                 navigate('/login')
             } else {
-                return fetch('http://localhost:3000/eventos/meus', { credentials: 'include' })
+                return fetch(`${API_URL}/eventos/meus`, { credentials: 'include' })
             }
         })
         .then(res => res && res.json())
@@ -31,7 +34,7 @@ function MeusEventos() {
         if (!confirmar) return;
 
         try {
-            const res = await fetch(`http://localhost:3000/eventos/${id}`, {
+            const res = await fetch(`${API_URL}/eventos/${id}`, {
                 method: 'DELETE',
                 credentials: 'include'
             })

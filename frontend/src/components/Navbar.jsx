@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+const API_URL = import.meta.env.VITE_API_URL;
+
+
 function Navbar() {
     const [user, setUser] = useState(null)
     const navigate = useNavigate()
 
     useEffect(() => {
-        fetch('http://localhost:3000/usuarios/me', {
+        fetch(`${API_URL}/usuarios/me`, {
             credentials: 'include'
         })
             .then(res => res.json())
@@ -15,7 +18,7 @@ function Navbar() {
     }, [])
 
     function logout() {
-        fetch('http://localhost:3000/usuarios/logout', {
+        fetch(`${API_URL}/usuarios/logout`, {
             method: 'POST',
             credentials: 'include'
         }).then(() => {

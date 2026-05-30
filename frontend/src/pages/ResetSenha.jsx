@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 
+const API_URL = import.meta.env.VITE_API_URL;
+
+
 function ResetSenha() {
     const [params] = useSearchParams()
     const navigate = useNavigate()
@@ -19,7 +22,7 @@ function ResetSenha() {
 
         try {
             const res = await fetch(
-                `http://localhost:3000/usuarios/reset-senha/${token}`,
+                `${API_URL}/usuarios/reset-senha/${token}`,
                 {
                     method: 'POST',
                     headers: {

@@ -1,5 +1,6 @@
 const Evento = require('../models/Evento');
-const Usuario = require('../models/Usuario'); 
+const Usuario = require('../models/Usuario');
+const Stand = require('../models/Stand')
 
 async function criarEvento(req, res) {
     try {
@@ -44,18 +45,40 @@ async function criarEvento(req, res) {
 
 async function listarEventos(req, res) {
     try {
-        // 1. Pega a data e hora exatas de agora
         const dataAtual = new Date();
 
-        // 2. Busca no banco apenas eventos cuja data_fim seja MAIOR OU IGUAL ($gte) a hoje
         const eventos = await Evento.find({
             data_fim: { $gte: dataAtual }
+        }).lean();
+
+        const contagemStands = await Stand.aggregate([
+            {
+                $group: {
+                    _id: '$eventoId',
+                    total: { $sum: 1 }
+                }
+            }
+        ]);
+
+        const mapaContagem = {};
+
+        contagemStands.forEach(item => {
+            mapaContagem[item._id.toString()] = item.total;
         });
 
-        res.json(eventos);
+        const eventosComQuantidadeStands = eventos.map(evento => ({
+            ...evento,
+            quantidadeStands:
+                mapaContagem[evento._id.toString()] || 0
+        }));
+
+        return res.json(eventosComQuantidadeStands);
+
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Erro ao buscar eventos' });
+        return res.status(500).json({
+            message: 'Erro ao buscar eventos'
+        });
     }
 }
 

@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+const API_URL = `${import.meta.env.VITE_API_URL}`
+
+
 function Cadastro() {
     const navigate = useNavigate()
 
     const [nome, setNome] = useState('')
     const [email, setEmail] = useState('')
-    const [telefone, setTelefone] = useState('')
     const [senha, setSenha] = useState('')
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
@@ -18,7 +20,7 @@ function Cadastro() {
         setSuccess('')
 
         try {
-            const res = await fetch('http://localhost:3000/usuarios', {
+            const res = await fetch(`${API_URL}/usuarios`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -26,7 +28,6 @@ function Cadastro() {
                 body: JSON.stringify({
                     nome,
                     email,
-                    telefone,
                     senha
                 })
             })
@@ -40,7 +41,6 @@ function Cadastro() {
 
             setSuccess('Cadastro realizado! Verifique seu email para ativar a conta.')
 
-            // opcional: redirecionar pro login depois de 2s
             setTimeout(() => {
                 navigate('/login')
             }, 2000)
@@ -67,13 +67,6 @@ function Cadastro() {
                     placeholder="Email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    style={styles.input}
-                />
-
-                <input
-                    placeholder="Telefone"
-                    value={telefone}
-                    onChange={(e) => setTelefone(e.target.value)}
                     style={styles.input}
                 />
 

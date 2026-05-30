@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 
+const API_URL = `${import.meta.env.VITE_API_URL}`
+
+
 function LocationMarker({ position, setPosition }) {
     const map = useMapEvents({
         click(e) {
@@ -35,7 +38,7 @@ function CriarEvento() {
     const [buscando, setBuscando] = useState(false)
 
     useEffect(() => {
-        fetch('http://localhost:3000/usuarios/me', { credentials: 'include' })
+        fetch(`${API_URL}/usuarios/me`, { credentials: 'include' })
             .then(res => {
                 if (res.status === 401) navigate('/login')
             })
@@ -108,7 +111,7 @@ function CriarEvento() {
         }
 
         try {
-            const res = await fetch('http://localhost:3000/eventos', {
+            const res = await fetch(`${API_URL}/eventos`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(novoEvento),

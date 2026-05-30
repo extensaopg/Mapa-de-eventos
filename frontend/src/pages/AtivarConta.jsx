@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 
+const API_URL = import.meta.env.VITE_API_URL;
+
+
 function AtivarConta() {
     const [params] = useSearchParams()
     const navigate = useNavigate()
@@ -18,7 +21,7 @@ function AtivarConta() {
         async function ativar() {
             try {
                 const res = await fetch(
-                    `http://localhost:3000/usuarios/ativar/${token}`
+                    `${API_URL}/usuarios/ativar/${token}`
                 )
 
                 const data = await res.json()

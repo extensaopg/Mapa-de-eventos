@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+const API_URL = `${import.meta.env.VITE_API_URL}`
+
+
 function EsqueciSenha() {
     const [email, setEmail] = useState('')
     const [msg, setMsg] = useState('')
@@ -14,7 +17,7 @@ function EsqueciSenha() {
         setError('')
 
         try {
-            const res = await fetch('http://localhost:3000/usuarios/esqueci-senha', {
+            const res = await fetch(`${API_URL}/usuarios/esqueci-senha`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

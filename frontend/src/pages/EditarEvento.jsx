@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 
+const API_URL = `${import.meta.env.VITE_API_URL}`
+
 function LocationMarker({ position, setPosition }) {
     const map = useMapEvents({
         click(e) {
@@ -38,7 +40,7 @@ function EditarEvento() {
     const [buscando, setBuscando] = useState(false)
 
     useEffect(() => {
-        fetch('http://localhost:3000/usuarios/me', { credentials: 'include' })
+        fetch(`${API_URL}/usuarios/me`, { credentials: 'include' })
             .then(res => {
                 if (res.status === 401) navigate('/login')
                 return res.json()
@@ -49,7 +51,7 @@ function EditarEvento() {
     useEffect(() => {
         const fetchEvento = async () => {
             try {
-                const res = await fetch(`http://localhost:3000/eventos/${id}`)
+                const res = await fetch(`${API_URL}/eventos/${id}`)
                 if (res.ok) {
                     const data = await res.json()
                     setDescricao(data.descricao)
@@ -142,7 +144,7 @@ function EditarEvento() {
         }
 
         try {
-            const res = await fetch(`http://localhost:3000/eventos/${id}`, {
+            const res = await fetch(`${API_URL}/eventos/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(eventoAtualizado),

@@ -5,9 +5,9 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
 import { buscarEventos } from '../services/eventosService'
-import { buscarStands } from '../services/standsService' 
+import { buscarStandsPorEvento } from '../services/standsService'
 
-import { eventoIcon, standIcon } from '../utils/mapIcons';
+import { eventoIcon, standIcon, usuarioIcon } from '../utils/mapIcons';
 import TracarRotaApe from './TracarRotaApe';
 import StandModal from './StandModal';
 import SearchEventMap from './SearchEventMap';
@@ -58,6 +58,7 @@ function MapView() {
     const [eventos, setEventos] = useState([])
     const [stands, setStands] = useState([])
     const [eventoAtivoId, setEventoAtivoId] = useState(null)
+    const [modoStands, setModoStands] = useState(false)
 
     const [destinoRota, setDestinoRota] = useState(null);
     const [standSelecionado, setStandSelecionado] = useState(null);
@@ -69,7 +70,6 @@ function MapView() {
         async function load() {
             try {
                 setEventos(await buscarEventos());
-                setStands(await buscarStands());
             } catch (error) {
                 console.error("Erro ao buscar dados da API:", error);
             }
@@ -100,7 +100,7 @@ function MapView() {
     }, []);
 
 
-    const standsVisiveis = stands.filter((stand) => stand.eventoId === eventoAtivoId)
+    const standsVisiveis = stands
     const eventosFiltrados = eventos.filter(evento => 
         evento.descricao?.toLowerCase().includes(termoBusca.toLowerCase())
     );
@@ -149,6 +149,30 @@ function MapView() {
         
         setDestinoRota([stand.latitude, stand.longitude]);
     }
+    async function abrirEvento(evento) {
+        const idDoEvento = evento.id || evento._id;
+
+        if (evento.quantidadeStands === 0) {
+            setDestinoRota([
+                evento.latitude,
+                evento.longitude
+            ]);
+            return;
+        }
+
+        try {
+            const standsEvento =
+                await buscarStandsPorEvento(idDoEvento);
+
+            setStands(standsEvento);
+            setEventoAtivoId(idDoEvento);
+            setModoStands(true);
+            setDestinoRota(null);
+
+        } catch (error) {
+            console.error(error);
+        }
+    }
 
     return (
         <div style={{ position: 'relative', height: '100vh', width: '100%' }}>
@@ -162,6 +186,30 @@ function MapView() {
                 setDestinoRota(null);
             }}
         />
+            {modoStands && (
+                <button
+                    onClick={() => {
+                        setModoStands(false);
+                        setEventoAtivoId(null);
+                        setStands([]);
+                        setDestinoRota(null);
+                    }}
+                    style={{
+                        position: 'absolute',
+                        zIndex: 9999,
+                        top: '55px',
+                        left: '50px',
+                        height: '34px',
+                        background: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        boxShadow: '0 1px 5px rgba(0,0,0,0.65)',
+                        cursor: 'pointer'
+                    }}
+                >
+                    ← Voltar para eventos
+                </button>
+            )}
 
         <StandModal 
             stand={standSelecionado} 
@@ -187,12 +235,12 @@ function MapView() {
             />
 
             {/* usuário */}
-            <Marker position={position}>
+            <Marker position={position} icon={usuarioIcon}>
                 <Popup>Você está aqui</Popup>
             </Marker>
 
             {/* eventos */}
-            {eventos.map((evento) => 
+            {!modoStands && eventos.map((evento) =>
             (
                 
                 <Marker
@@ -212,17 +260,26 @@ function MapView() {
                         <br />
                         <br />
 
-                        <button
-                            onClick={() => {
-                                const idDoEvento = evento.id || evento._id;
-                                console.log("Teste de clique")
-                                setEventoAtivoId(idDoEvento);
-                                setDestinoRota(null);
-                            }}
-                            style= {estiloBotaoPrincipal}
-                        >
-                            Ver stands desse evento
-                        </button>
+                        {evento.quantidadeStands > 0 ? (
+                            <button
+                                onClick={() => abrirEvento(evento)}
+                                style={estiloBotaoPrincipal}
+                            >
+                                Ver stands desse evento
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() =>
+                                    setDestinoRota([
+                                        evento.latitude,
+                                        evento.longitude
+                                    ])
+                                }
+                                style={estiloBotaoPrincipal}
+                            >
+                                Ir até o evento
+                            </button>
+                        )}
                     </Popup>
                 </Marker>
             ))}

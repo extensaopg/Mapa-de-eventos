@@ -2,13 +2,15 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import MapView from '../components/MapView'
 
+const API_URL = `${import.meta.env.VITE_API_URL}`
+
 function Home() {
     const [user, setUser] = useState(null)
     const [open, setOpen] = useState(false)
     const navigate = useNavigate()
 
     useEffect(() => {
-        fetch('http://localhost:3000/usuarios/me', {
+        fetch(`${API_URL}/usuarios/me`, {
             credentials: 'include'
         })
             .then(async (res) => {
@@ -24,7 +26,7 @@ function Home() {
     }, [])
 
     function logout() {
-        fetch('http://localhost:3000/usuarios/logout', {
+        fetch(`${API_URL}/usuarios/logout`, {
             method: 'POST',
             credentials: 'include'
         }).then(() => {

@@ -28,7 +28,6 @@ async function criarUsuario(req, res) {
         await Usuario.create({
             nome,
             email,
-            telefone,
             senha: senhaHash,
             ativo: false,
             token_ativacao: token

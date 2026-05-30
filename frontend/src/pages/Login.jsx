@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function Login() {
     const navigate = useNavigate()
 
@@ -14,7 +16,7 @@ function Login() {
         setError('')
 
         try {
-            const res = await fetch('http://localhost:3000/usuarios/login', {
+            const res = await fetch(`${API_URL}/usuarios/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
