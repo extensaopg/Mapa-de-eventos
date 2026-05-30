@@ -44,12 +44,18 @@ async function criarEvento(req, res) {
 
 async function listarEventos(req, res) {
     try {
-        // O .populate() busca os dados do Usuário (nome e email) associados aos IDs
-        const eventos = await Evento.find().populate('administradores', 'nome email')
-        res.json(eventos)
+        // 1. Pega a data e hora exatas de agora
+        const dataAtual = new Date();
+
+        // 2. Busca no banco apenas eventos cuja data_fim seja MAIOR OU IGUAL ($gte) a hoje
+        const eventos = await Evento.find({
+            data_fim: { $gte: dataAtual }
+        });
+
+        res.json(eventos);
     } catch (error) {
-        console.error(error)
-        res.status(500).json({ error: 'Erro ao buscar eventos' })
+        console.error(error);
+        res.status(500).json({ message: 'Erro ao buscar eventos' });
     }
 }
 

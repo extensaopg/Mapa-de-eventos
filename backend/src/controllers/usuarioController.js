@@ -97,11 +97,11 @@ async function login(req, res) {
             })
         }
 
-        if (!user.ativo) {
-            return res.status(401).json({
-                message: 'Conta não ativada'
-            })
-        }
+        //if (!user.ativo) {
+        //    return res.status(401).json({
+        //        message: 'Conta não ativada'
+        //    })
+        //}
 
         const senhaOk = await bcrypt.compare(senha, user.senha)
 
