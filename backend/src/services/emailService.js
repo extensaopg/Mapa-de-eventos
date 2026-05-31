@@ -1,31 +1,28 @@
-const nodemailer = require('nodemailer')
+const SibApiV3Sdk = require('@getbrevo/brevo')
 
-const login = process.env.EMAIL_USER
-const password = process.env.EMAIL_PASS
+const client = SibApiV3Sdk.ApiClient.instance
+const apiKey = client.authentications['api-key']
+apiKey.apiKey = process.env.BREVO_API_KEY
 
-const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
-    auth: {
-        user: login,
-        pass: password
-    }
-})
+const emailApi = new SibApiV3Sdk.TransactionalEmailsApi()
 
-async function sendEmail(destination, subject, body, isHtml = false) {
+async function sendEmail(destination, subject, body) {
     try {
-        const info = await transporter.sendMail({
-            from: `"Mapa de Eventos" <${login}>`,
-            to: destination,
+        await emailApi.sendTransacEmail({
+            sender: {
+                email: process.env.EMAIL_USER,
+                name: "Mapa de Eventos"
+            },
+            to: [{ email: destination }],
             subject,
-            [isHtml ? 'html' : 'text']: body
+            htmlContent: body
         })
 
-        console.log('EMAIL ENVIADO:', info.messageId)
+        console.log('EMAIL ENVIADO VIA BREVO')
         return true
+
     } catch (err) {
-        console.error('ERRO AO ENVIAR EMAIL:', err)
+        console.error('ERRO AO ENVIAR EMAIL (BREVO):', err)
         return false
     }
 }
