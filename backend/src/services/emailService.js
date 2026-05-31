@@ -30,7 +30,7 @@ async function sendEmail(destination, subject, body) {
 
     } catch (err) {
         console.error("ERRO BREVO:", err.response?.data || err.message)
-        return false
+        throw new Error('Falha ao enviar email')
     }
 }
 async function enviarEmailAtivacao(email, token) {

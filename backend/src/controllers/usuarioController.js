@@ -22,8 +22,18 @@ async function criarUsuario(req, res) {
         }
 
         const senhaHash = await bcrypt.hash(senha, 10)
-
         const token = crypto.randomBytes(32).toString('hex')
+
+
+        try {
+            await enviarEmailAtivacao(email, token)
+        } catch (emailError) {
+            console.error('Erro ao enviar email:', emailError)
+
+            return res.status(502).json({
+                message: 'Erro ao enviar email de ativação. Tente novamente.'
+            })
+        }
 
         await Usuario.create({
             nome,
@@ -32,8 +42,6 @@ async function criarUsuario(req, res) {
             ativo: false,
             token_ativacao: token
         })
-
-        await enviarEmailAtivacao(email, token)
 
         return res.status(201).json({
             message: 'Usuário criado! Verifique seu email para ativar a conta.'
@@ -146,12 +154,18 @@ async function esqueciSenha(req, res) {
         const expira = new Date()
         expira.setHours(expira.getHours() + 1)
 
+        try {
+            await enviarEmailReset(email, token)
+        } catch (err) {
+            console.error(err)
+            return res.status(502).json({
+                message: 'Erro ao enviar email de recuperação'
+            })
+        }
+
         user.reset_token = token
         user.reset_expira = expira
-
         await user.save()
-
-        await enviarEmailReset(email, token)
 
         return res.json({
             message: 'Email enviado com instruções de recuperação'
