@@ -8,49 +8,52 @@ const transporter = nodemailer.createTransport({
     }
 })
 
-async function enviarEmailAtivacao(email, token) {
-    const link = `http://localhost:5173/ativar-conta?token=${token}`
+// roda UMA vez só (debug opcional)
+transporter.verify()
+    .then(() => console.log("SMTP OK"))
+    .catch(err => console.log("SMTP ERRO:", err))
 
+
+async function enviarEmailAtivacao(email, token) {
     try {
-        await transporter.sendMail({
+        const link = `${process.env.FRONTEND_URL}/ativar-conta?token=${token}`
+
+        const info = await transporter.sendMail({
             from: process.env.EMAIL_USER,
             to: email,
             subject: 'Ativação da conta - Mapa de Eventos',
             text: `Clique para ativar sua conta: ${link}`
         })
 
-
-        transporter.verify((error, success) => {
-            if (error) {
-                console.log("SMTP ERRO:", error)
-            } else {
-                console.log("SMTP OK pronto pra enviar email")
-            }
-        })
-
-        console.log("EMAIL ENVIADO")
+        console.log("EMAIL ENVIADO:", info.messageId)
 
     } catch (err) {
-        console.error("ERRO AO ENVIAR EMAIL:", err)
+        console.error("ERRO AO ENVIAR EMAIL ATIVAÇÃO:", err)
     }
-
 }
 
 async function enviarEmailReset(email, token) {
-    const link = `http://localhost:5173/reset-senha?token=${token}`
+    try {
+        const link = `${process.env.FRONTEND_URL}/reset-senha?token=${token}`
 
-    await transporter.sendMail({
-        from: `"Mapa de Eventos" <${process.env.EMAIL_USER}>`,
-        to: email,
-        subject: 'Redefinição de Senha',
-        html: `
-            <h2>Redefinição de Senha</h2>
-            <p>Clique no link abaixo para redefinir sua senha:</p>
-            <a href="${link}">Redefinir senha</a>
-            <p>Esse link expira em 1 hora.</p>
-        `
-    })
+        const info = await transporter.sendMail({
+            from: `"Mapa de Eventos" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: 'Redefinição de Senha',
+            html: `
+                <h2>Redefinição de Senha</h2>
+                <a href="${link}">Redefinir senha</a>
+                <p>Expira em 1 hora.</p>
+            `
+        })
+
+        console.log("EMAIL RESET ENVIADO:", info.messageId)
+
+    } catch (err) {
+        console.error("ERRO AO ENVIAR EMAIL RESET:", err)
+    }
 }
+
 module.exports = {
     enviarEmailAtivacao,
     enviarEmailReset
