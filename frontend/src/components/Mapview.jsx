@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
 
@@ -24,14 +24,15 @@ L.Icon.Default.mergeOptions({
         'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 })
 
-function ChangeView({ center, zoom }) {
+function ChangeView({ center, zoom, onInit }) {
     const map = useMap()
 
     useEffect(() => {
-        if (center) {
+        if (center && !onInit.current) {
             map.setView(center, zoom)
+            onInit.current = true
         }
-    }, [center, zoom, map])
+    }, [center, zoom, map, onInit])
 
     return null
 }
@@ -64,6 +65,9 @@ function MapView() {
 
     const [buscaAberta, setBuscaAberta] = useState(false);
     const [termoBusca, setTermoBusca] = useState('');
+    const [mapInitialized, setMapInitialized] = useState(false)
+
+    const initialCenterRef = useRef(false)
 
     useEffect(() => {
         async function load() {
@@ -226,7 +230,7 @@ function MapView() {
                 zoom={13}
                 style={{ height: '100vh', width: '100%' }}
             >
-                <ChangeView center={position} zoom={13} />
+                <ChangeView center={position} zoom={13} onInit={initialCenterRef} />
                 <AjusteDeCameraStands standsVisiveis={standsVisiveis} />
                 <TracarRotaApe origem={position} destino={destinoRota} />
 
