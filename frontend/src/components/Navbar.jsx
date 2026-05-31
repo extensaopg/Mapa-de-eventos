@@ -9,6 +9,7 @@ function Navbar() {
     const navigate = useNavigate()
 
     useEffect(() => {
+        console.log("API_URL =", API_URL)
         fetch(`${API_URL}/usuarios/me`, {
             credentials: 'include'
         })
