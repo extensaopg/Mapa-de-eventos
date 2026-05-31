@@ -189,33 +189,41 @@ function MapView() {
                     setEventoAtivoId(evento.id || evento._id);
                     setDestinoRota(null);
                 }}
+                buscaAberta={buscaAberta}
+                setBuscaAberta={setBuscaAberta}
             />
 
             {modoStands && (
-                <button
-                    onClick={() => {
-                        setModoStands(false);
-                        setEventoAtivoId(null);
-                        setStands([]);
-                        setDestinoRota(null);
-                    }}
+                <div
                     style={{
                         position: 'absolute',
-                        zIndex: 9999,
-                        top: '55px',
-                        left: '50px',
-                        height: '34px',
-                        background: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        boxShadow: '0 1px 5px rgba(0,0,0,0.65)',
-                        cursor: 'pointer'
+                        top: '10px',
+                        left: buscaAberta ? '320px' : '100px',
+                        zIndex: 9999
                     }}
                 >
-                    ← Voltar para eventos
-                </button>
+                    <button
+                        onClick={() => {
+                            setModoStands(false);
+                            setEventoAtivoId(null);
+                            setStands([]);
+                            setDestinoRota(null);
+                        }}
+                        style={{
+                            height: '34px',
+                            background: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            boxShadow: '0 1px 5px rgba(0,0,0,0.65)',
+                            cursor: 'pointer',
+                            padding: '0 10px',
+                            whiteSpace: 'nowrap'
+                        }}
+                    >
+                        ← Voltar para eventos
+                    </button>
+                </div>
             )}
-
             <StandModal
                 stand={standSelecionado}
                 onClose={() => setStandSelecionado(null)}

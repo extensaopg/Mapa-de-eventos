@@ -1,7 +1,8 @@
 import { useState } from 'react';
 
-export default function SearchEventMap({ eventos, onSelectEvento }) {
-    const [buscaAberta, setBuscaAberta] = useState(false);
+export default function SearchEventMap({ eventos, onSelectEvento, buscaAberta,
+                                           setBuscaAberta }) {
+
     const [termoBusca, setTermoBusca] = useState('');
     const [itemFocadoId, setItemFocadoId] = useState(null);
 
