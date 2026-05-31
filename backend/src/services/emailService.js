@@ -1,32 +1,38 @@
-const Brevo = require('@getbrevo/brevo')
+const axios = require('axios')
 
-const apiInstance = new Brevo.TransactionalEmailsApi()
-
-const apiKey = Brevo.ApiClient.instance.authentications['api-key']
-apiKey.apiKey = process.env.BREVO_API_KEY
-
+const BREVO_URL = 'https://api.brevo.com/v3/smtp/email'
 
 async function sendEmail(destination, subject, body) {
     try {
-        await apiInstance.sendTransacEmail({
-            sender: {
-                email: process.env.EMAIL_USER,
-                name: "Mapa de Eventos"
+        await axios.post(
+            BREVO_URL,
+            {
+                sender: {
+                    name: "Mapa de Eventos",
+                    email: process.env.EMAIL_USER
+                },
+                to: [
+                    { email: destination }
+                ],
+                subject,
+                htmlContent: body
             },
-            to: [{ email: destination }],
-            subject,
-            htmlContent: body
-        })
+            {
+                headers: {
+                    'api-key': process.env.BREVO_API_KEY,
+                    'content-type': 'application/json'
+                }
+            }
+        )
 
-        console.log("EMAIL ENVIADO VIA BREVO")
+        console.log("EMAIL ENVIADO VIA BREVO API")
         return true
 
     } catch (err) {
-        console.error("ERRO BREVO:", err)
+        console.error("ERRO BREVO:", err.response?.data || err.message)
         return false
     }
 }
-
 async function enviarEmailAtivacao(email, token) {
     const link = `${process.env.FRONTEND_URL}/ativar-conta?token=${token}`
 
