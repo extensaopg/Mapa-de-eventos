@@ -6,15 +6,24 @@ const eventoRoutes = require('./routes/eventoRoutes');
 const usuarioRoutes = require('./routes/usuarioRoutes')
 const standRoutes = require('./routes/standRoutes')
 
+const isProd = process.env.NODE_ENV === 'production'
 const app = express();
 
 app.set('trust proxy', 1)
 
 app.use(cors({
-    origin: [
-        'http://localhost:5173',
-        process.env.FRONTEND_URL
-    ],
+    origin: function (origin, callback) {
+        const allowedOrigins = [
+            'http://localhost:5173',
+            process.env.FRONTEND_URL
+        ]
+
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true)
+        } else {
+            callback(new Error('Not allowed by CORS'))
+        }
+    },
     credentials: true
 }))
 
@@ -26,8 +35,9 @@ app.use(session({
     saveUninitialized: false,
     proxy: true,
     cookie: {
-        secure: true,        // força produção real
-        sameSite: 'none',    // obrigatório cross-site
+        secure: isProd,
+        sameSite: isProd ? 'none' : 'lax',
+        httpOnly: true,
         maxAge: 1000 * 60 * 60 * 24
     }
 }))
