@@ -66,23 +66,6 @@ function MapView() {
     const [termoBusca, setTermoBusca] = useState('');
 
     useEffect(() => {
-        navigator.geolocation.getCurrentPosition(
-            (pos) => {
-                setPosition([
-                    pos.coords.latitude,
-                    pos.coords.longitude,
-                ])
-            },
-            (err) => console.error("Erro de GPS:", err),
-            {
-                enableHighAccuracy: true,
-                timeout: 5000
-            }
-        )
-    }, [])
-
-    // eventos
-    useEffect(() => {
         async function load() {
             try {
                 setEventos(await buscarEventos());
@@ -94,7 +77,29 @@ function MapView() {
         load();
     }, []);
 
+    useEffect(() => {
+        const watchId = navigator.geolocation.watchPosition(
+            (pos) => {
+                setPosition([
+                    pos.coords.latitude,
+                    pos.coords.longitude,
+                ]);
+            },
+            (err) => console.error("Erro de GPS:", err),
+            {
+                enableHighAccuracy: true,
+                maximumAge: 0,
+                timeout: 5000
+            }
+        );
+
+        return () => {
+            navigator.geolocation.clearWatch(watchId);
+        };
+    }, []);
+
     const standsVisiveis = stands
+
     const eventosFiltrados = eventos.filter(evento =>
         evento.descricao?.toLowerCase().includes(termoBusca.toLowerCase())
     );
@@ -125,7 +130,7 @@ function MapView() {
 
     const handleTraçarRotaApe = (stand) => {
         if (!position) {
-            alert("Aguarde localização.");
+            alert("Aguarde, ainda estamos buscando sua localização exata.");
             return;
         }
 
@@ -135,8 +140,10 @@ function MapView() {
         const distanciaEmMetros = userLatLng.distanceTo(standLatLng);
 
         if (distanciaEmMetros > 1000) {
-            const km = (distanciaEmMetros / 1000).toFixed(1);
-            alert(`📍 Stand muito distante!\n\nAproximadamente ${km} km.`);
+            const distanciaEmKm = (distanciaEmMetros / 1000).toFixed(1);
+
+            alert(`📍 Stand muito distante!\n\nEste stand está a aproximadamente ${distanciaEmKm} km de você.`);
+
             return;
         }
 
@@ -147,7 +154,10 @@ function MapView() {
         const idDoEvento = evento.id || evento._id;
 
         if (evento.quantidadeStands === 0) {
-            setDestinoRota([evento.latitude, evento.longitude]);
+            setDestinoRota([
+                evento.latitude,
+                evento.longitude
+            ]);
             return;
         }
 
@@ -190,18 +200,23 @@ function MapView() {
                         zIndex: 9999,
                         top: '55px',
                         left: '50px',
-                        height: '34px'
+                        height: '34px',
+                        background: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        boxShadow: '0 1px 5px rgba(0,0,0,0.65)',
+                        cursor: 'pointer'
                     }}
                 >
-                    ← Voltar
+                    ← Voltar para eventos
                 </button>
             )}
 
             <StandModal
                 stand={standSelecionado}
                 onClose={() => setStandSelecionado(null)}
-                onTracarRota={(coords) => {
-                    setDestinoRota(coords);
+                onTracarRota={(coordenadas) => {
+                    setDestinoRota(coordenadas);
                     setStandSelecionado(null);
                 }}
             />
@@ -213,7 +228,6 @@ function MapView() {
             >
                 <ChangeView center={position} zoom={13} />
                 <AjusteDeCameraStands standsVisiveis={standsVisiveis} />
-
                 <TracarRotaApe origem={position} destino={destinoRota} />
 
                 <TileLayer
@@ -230,46 +244,75 @@ function MapView() {
                 {!modoStands && eventos.map((evento) => (
                     <Marker
                         key={evento.id || evento._id}
-                        position={[evento.latitude, evento.longitude]}
+                        position={[
+                            evento.latitude,
+                            evento.longitude,
+                        ]}
                         icon={eventoIcon}
                     >
                         <Popup>
                             <strong>{evento.descricao}</strong>
                             <br />
 
+                            Início: {new Date(evento.data_inicio).toLocaleDateString('pt-BR')}
+                            <br />
+                            Fim: {new Date(evento.data_fim).toLocaleDateString('pt-BR')}
+                            <br /><br />
+
                             {evento.quantidadeStands > 0 ? (
-                                <button onClick={() => abrirEvento(evento)}>
-                                    Ver stands
+                                <button
+                                    onClick={() => abrirEvento(evento)}
+                                    style={estiloBotaoPrincipal}
+                                >
+                                    Ver stands desse evento
                                 </button>
                             ) : (
-                                <button onClick={() =>
-                                    setDestinoRota([evento.latitude, evento.longitude])
-                                }>
-                                    Ir até evento
+                                <button
+                                    onClick={() =>
+                                        setDestinoRota([
+                                            evento.latitude,
+                                            evento.longitude
+                                        ])
+                                    }
+                                    style={estiloBotaoPrincipal}
+                                >
+                                    Ir até o evento
                                 </button>
                             )}
                         </Popup>
                     </Marker>
                 ))}
 
-                {/* stands */}
                 {standsVisiveis.map((stand) => (
                     <Marker
                         key={stand.id || stand._id}
-                        position={[stand.latitude, stand.longitude]}
+                        position={[
+                            stand.latitude,
+                            stand.longitude,
+                        ]}
                         icon={standIcon}
                     >
                         <Popup>
-                            <strong>{stand.descricao}</strong>
-                            <br />
+                            <div style={{ textAlign: 'center' }}>
+                                <p><strong>{stand.descricao}</strong></p>
 
-                            <button onClick={() => setStandSelecionado(stand)}>
-                                Ver detalhes
-                            </button>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setStandSelecionado(stand);
+                                    }}
+                                    style={estiloBotaoPrincipal}
+                                >
+                                    Ver mais detalhes
+                                </button>
 
-                            <button onClick={() => handleTraçarRotaApe(stand)}>
-                                Ir até
-                            </button>
+                                <button
+                                    onClick={() => handleTraçarRotaApe(stand)}
+                                    style={estiloBotaoSecundario}
+                                >
+                                    Ir até o stand
+                                </button>
+                            </div>
                         </Popup>
                     </Marker>
                 ))}
