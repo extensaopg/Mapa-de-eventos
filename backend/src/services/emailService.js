@@ -1,14 +1,14 @@
-const SibApiV3Sdk = require('@getbrevo/brevo')
+const Brevo = require('@getbrevo/brevo')
 
-const client = SibApiV3Sdk.ApiClient.instance
-const apiKey = client.authentications['api-key']
+const apiInstance = new Brevo.TransactionalEmailsApi()
+
+const apiKey = Brevo.ApiClient.instance.authentications['api-key']
 apiKey.apiKey = process.env.BREVO_API_KEY
 
-const emailApi = new SibApiV3Sdk.TransactionalEmailsApi()
 
 async function sendEmail(destination, subject, body) {
     try {
-        await emailApi.sendTransacEmail({
+        await apiInstance.sendTransacEmail({
             sender: {
                 email: process.env.EMAIL_USER,
                 name: "Mapa de Eventos"
@@ -18,11 +18,11 @@ async function sendEmail(destination, subject, body) {
             htmlContent: body
         })
 
-        console.log('EMAIL ENVIADO VIA BREVO')
+        console.log("EMAIL ENVIADO VIA BREVO")
         return true
 
     } catch (err) {
-        console.error('ERRO AO ENVIAR EMAIL (BREVO):', err)
+        console.error("ERRO BREVO:", err)
         return false
     }
 }
