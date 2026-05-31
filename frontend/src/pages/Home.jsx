@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import MapView from '../components/MapView'
+import MapView from '../components/Mapview'
 
 const API_URL = `${import.meta.env.VITE_API_URL}`
 
