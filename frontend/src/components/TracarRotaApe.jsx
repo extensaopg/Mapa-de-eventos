@@ -9,7 +9,7 @@ export default function TracarRotaApe({ origem, destino }) {
     const routingRef = useRef(null);
     const ultimaOrigemRef = useRef(null);
 
-    const DISTANCIA_MINIMA = 3; 
+    const DISTANCIA_MINIMA = 3;
 
     useEffect(() => {
         if (!origem || !destino) return;
