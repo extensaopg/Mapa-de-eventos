@@ -193,39 +193,30 @@ function MapView() {
                 setBuscaAberta={setBuscaAberta}
             />
 
-            {modoStands && (
-                <div
+            {modoStands && !buscaAberta && (
+                <button
+                    onClick={() => {
+                        setModoStands(false);
+                        setEventoAtivoId(null);
+                        setStands([]);
+                        setDestinoRota(null);
+                    }}
                     style={{
                         position: 'absolute',
-                        bottom: '20px',
-                        right: '8px',
                         zIndex: 9999,
+                        top: '55px',
+                        left: '50px',
+                        height: '34px',
+                        background: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        boxShadow: '0 1px 5px rgba(0,0,0,0.65)',
+                        cursor: 'pointer'
                     }}
-                >
-                    <button
-                        onClick={() => {
-                            setModoStands(false);
-                            setEventoAtivoId(null);
-                            setStands([]);
-                            setDestinoRota(null);
-                        }}
-                        style={{
-                            height: '32px',
-                            background: 'white',
-                            border: 'none',
-                            borderRadius: '6px',
-                            boxShadow: '0 1px 5px rgba(0,0,0,0.4)',
-                            cursor: 'pointer',
-                            padding: '0 12px',
-                            whiteSpace: 'nowrap',
-                            fontWeight: '500',
-                            fontSize: '14px',
-                        }}
                     >
-                        ← Voltar para eventos
-                    </button>
-                </div>
-            )}
+                    ← Voltar para eventos
+                </button>)}
+
             <StandModal
                 stand={standSelecionado}
                 onClose={() => setStandSelecionado(null)}
