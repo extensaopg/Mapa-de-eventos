@@ -221,6 +221,8 @@ async function resetSenha(req, res) {
 }
 
 async function me(req, res) {
+    console.log("COOKIE RECEBIDO:", req.headers.cookie)
+    console.log("SESSION:", req.session)
     try {
         if (!req.session.user) {
             return res.status(401).json({
