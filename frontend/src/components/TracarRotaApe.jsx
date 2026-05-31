@@ -7,15 +7,12 @@ import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 export default function TracarRotaApe({ origem, destino }) {
     const map = useMap();
     const routingRef = useRef(null);
+    const ultimaOrigemRef = useRef(null);
 
-    const INTERVALO_ATUALIZACAO = 30000; // 👈 fácil mudar aqui
+    const DISTANCIA_MINIMA = 3; 
 
     useEffect(() => {
         if (!origem || !destino) return;
-
-        if (routingRef.current) {
-            map.removeControl(routingRef.current);
-        }
 
         const routingControl = L.Routing.control({
             waypoints: [
@@ -40,27 +37,43 @@ export default function TracarRotaApe({ origem, destino }) {
         routingControl.addTo(map);
         routingRef.current = routingControl;
 
+        ultimaOrigemRef.current = origem;
+
         return () => {
             if (routingRef.current) {
                 map.removeControl(routingRef.current);
                 routingRef.current = null;
             }
         };
-    }, [origem, destino, map]);
+    }, [destino, map]);
 
-    // 2. atualiza rota sem recriar control
     useEffect(() => {
         if (!routingRef.current || !origem || !destino) return;
 
-        const interval = setInterval(() => {
-            routingRef.current.setWaypoints([
-                L.latLng(origem[0], origem[1]),
-                L.latLng(destino[0], destino[1])
-            ]);
-        }, INTERVALO_ATUALIZACAO);
+        const ultima = ultimaOrigemRef.current;
 
-        return () => clearInterval(interval);
-    }, [origem, destino]);
+        if (!ultima) {
+            ultimaOrigemRef.current = origem;
+            return;
+        }
+
+        const distancia = map.distance(
+            L.latLng(ultima[0], ultima[1]),
+            L.latLng(origem[0], origem[1])
+        );
+
+        if (distancia < DISTANCIA_MINIMA) {
+            return;
+        }
+
+        routingRef.current.setWaypoints([
+            L.latLng(origem[0], origem[1]),
+            L.latLng(destino[0], destino[1])
+        ]);
+
+        ultimaOrigemRef.current = origem;
+
+    }, [origem, destino, map]);
 
     return null;
 }
