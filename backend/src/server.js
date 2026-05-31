@@ -1,6 +1,6 @@
 require('dotenv').config()
 
-const app = require('./app') // 👈 ISSO AQUI ESTAVA FALTANDO
+const app = require('./app')
 const connectMongo = require('./config/mongo')
 
 connectMongo()

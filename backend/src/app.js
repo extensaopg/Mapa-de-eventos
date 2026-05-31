@@ -8,6 +8,7 @@ const standRoutes = require('./routes/standRoutes')
 
 const app = express();
 
+app.set('trust proxy', 1)
 
 app.use(cors({
     origin: [
@@ -23,11 +24,10 @@ app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
+    proxy: true,
     cookie: {
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production'
-            ? 'none'
-            : 'lax',
+        secure: true,        // força produção real
+        sameSite: 'none',    // obrigatório cross-site
         maxAge: 1000 * 60 * 60 * 24
     }
 }))
@@ -39,4 +39,5 @@ app.get('/', (req, res) => {
 app.use('/eventos', eventoRoutes);
 app.use('/usuarios', usuarioRoutes)
 app.use('/stands', standRoutes)
+
 module.exports = app;
