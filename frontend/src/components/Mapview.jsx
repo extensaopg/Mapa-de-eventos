@@ -197,9 +197,9 @@ function MapView() {
                 <div
                     style={{
                         position: 'absolute',
-                        top: '10px',
-                        left: buscaAberta ? '320px' : '100px',
-                        zIndex: 9999
+                        bottom: '20px',
+                        right: '8px',
+                        zIndex: 9999,
                     }}
                 >
                     <button
@@ -210,14 +210,16 @@ function MapView() {
                             setDestinoRota(null);
                         }}
                         style={{
-                            height: '34px',
+                            height: '32px',
                             background: 'white',
                             border: 'none',
-                            borderRadius: '4px',
-                            boxShadow: '0 1px 5px rgba(0,0,0,0.65)',
+                            borderRadius: '6px',
+                            boxShadow: '0 1px 5px rgba(0,0,0,0.4)',
                             cursor: 'pointer',
-                            padding: '0 10px',
-                            whiteSpace: 'nowrap'
+                            padding: '0 12px',
+                            whiteSpace: 'nowrap',
+                            fontWeight: '500',
+                            fontSize: '14px',
                         }}
                     >
                         ← Voltar para eventos
