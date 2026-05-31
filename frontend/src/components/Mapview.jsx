@@ -298,7 +298,7 @@ function MapView() {
                     >
                         <Popup>
                             <div style={{ textAlign: 'center' }}>
-                                <p><strong>{stand.descricao}</strong></p>
+                                <p><strong>{stand.nome}</strong></p>
 
                                 <button
                                     onClick={(e) => {
