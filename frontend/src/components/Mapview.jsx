@@ -10,7 +10,7 @@ import { buscarStandsPorEvento } from '../services/standsService'
 import { eventoIcon, standIcon, usuarioIcon } from '../utils/mapIcons';
 import TracarRotaApe from './TracarRotaApe';
 import StandModal from './StandModal';
-import SearchEventMap from './SearchEventMap';
+import SearchEventMap from './searchEventMap';
 
 
 // fix icon
