@@ -1,12 +1,23 @@
-const API_URL = `${import.meta.env.VITE_API_URL}`
+import { apiFetch } from './api'
 
-export async function buscarEventos() {
-    const response = await fetch(`${API_URL}/eventos`);
+export const eventosService = {
+  listar: () => apiFetch('/eventos'),
 
-    if (!response.ok) {
-        throw new Error('Erro ao buscar eventos');
-    }
+  meus: () => apiFetch('/eventos/meus'),
 
-    const eventos = response.json()
-    return eventos;
+  buscarPorId: (id) => apiFetch(`/eventos/${id}`),
+
+  criar: (dados) =>
+    apiFetch('/eventos', {
+      method: 'POST',
+      body: JSON.stringify(dados),
+    }),
+
+  atualizar: (id, dados) =>
+    apiFetch(`/eventos/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(dados),
+    }),
+
+  deletar: (id) => apiFetch(`/eventos/${id}`, { method: 'DELETE' }),
 }

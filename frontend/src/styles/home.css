@@ -1,0 +1,64 @@
+/* home.css */
+
+.home-wrapper {
+  height: 100vh;
+  width: 100%;
+  position: relative;
+}
+
+.home-user-box {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-sm);
+}
+
+.home-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-circle);
+  background: #333;
+  color: var(--color-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.home-menu {
+  background: var(--color-white);
+  padding: 10px;
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  box-shadow: var(--shadow-menu);
+}
+
+.home-menu button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 10px;
+  text-align: left;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+}
+
+.home-menu button:hover {
+  background: var(--color-bg);
+}
+
+.home-btn-login {
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--color-primary);
+  color: var(--color-white);
+  cursor: pointer;
+}

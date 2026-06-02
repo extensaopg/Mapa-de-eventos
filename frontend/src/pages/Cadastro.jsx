@@ -1,132 +1,77 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-
-const API_URL = `${import.meta.env.VITE_API_URL}`
-
+import { usuariosService } from '../services/usuariosService'
+import '../styles/auth.css'
 
 function Cadastro() {
-    const navigate = useNavigate()
+  const navigate = useNavigate()
+  const [nome, setNome] = useState('')
+  const [email, setEmail] = useState('')
+  const [senha, setSenha] = useState('')
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
 
-    const [nome, setNome] = useState('')
-    const [email, setEmail] = useState('')
-    const [senha, setSenha] = useState('')
-    const [error, setError] = useState('')
-    const [success, setSuccess] = useState('')
+  async function handleCadastro(e) {
+    e.preventDefault()
+    setError('')
+    setSuccess('')
 
-    async function handleCadastro(e) {
-        e.preventDefault()
+    try {
+      const res = await usuariosService.cadastro(nome, email, senha)
+      const data = await res.json()
 
-        setError('')
-        setSuccess('')
+      if (!res.ok) {
+        setError(data.message)
+        return
+      }
 
-        try {
-            const res = await fetch(`${API_URL}/usuarios`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    nome,
-                    email,
-                    senha
-                })
-            })
-
-            const data = await res.json()
-
-            if (!res.ok) {
-                setError(data.message)
-                return
-            }
-
-            setSuccess('Cadastro realizado! Verifique seu email para ativar a conta.')
-
-            setTimeout(() => {
-                navigate('/login')
-            }, 2000)
-
-        } catch (err) {
-            setError('Erro ao conectar com servidor')
-        }
+      setSuccess('Cadastro realizado! Verifique seu email para ativar a conta.')
+      setTimeout(() => navigate('/login'), 2000)
+    } catch {
+      setError('Erro ao conectar com servidor')
     }
+  }
 
-    return (
-        <div style={styles.container}>
-            <h2>Cadastro</h2>
+  return (
+    <div className="auth-container">
+      <h2>Cadastro</h2>
 
-            <form onSubmit={handleCadastro} style={styles.form}>
+      <form onSubmit={handleCadastro} className="auth-form">
+        <input
+          placeholder="Nome"
+          value={nome}
+          onChange={(e) => setNome(e.target.value)}
+          className="auth-input"
+        />
 
-                <input
-                    placeholder="Nome"
-                    value={nome}
-                    onChange={(e) => setNome(e.target.value)}
-                    style={styles.input}
-                />
+        <input
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="auth-input"
+        />
 
-                <input
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    style={styles.input}
-                />
+        <input
+          placeholder="Senha"
+          type="password"
+          value={senha}
+          onChange={(e) => setSenha(e.target.value)}
+          className="auth-input"
+        />
 
-                <input
-                    placeholder="Senha"
-                    type="password"
-                    value={senha}
-                    onChange={(e) => setSenha(e.target.value)}
-                    style={styles.input}
-                />
+        {error && <p className="auth-msg--error">{error}</p>}
+        {success && <p className="auth-msg--success">{success}</p>}
 
-                {error && <p style={{ color: 'red' }}>{error}</p>}
-                {success && <p style={{ color: 'green' }}>{success}</p>}
+        <button type="submit" className="auth-button auth-button--success">
+          Criar conta
+        </button>
+      </form>
 
-                <button type="submit" style={styles.button}>
-                    Criar conta
-                </button>
-
-            </form>
-
-            <p style={styles.link} onClick={() => navigate('/login')}>
-                Já tenho conta
-            </p>
-        </div>
-    )
-}
-
-const styles = {
-    container: {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '100vh',
-        fontFamily: 'Arial'
-    },
-    form: {
-        display: 'flex',
-        flexDirection: 'column',
-        width: 300,
-        gap: 10
-    },
-    input: {
-        padding: 10,
-        borderRadius: 6,
-        border: '1px solid #ccc'
-    },
-    button: {
-        padding: 10,
-        borderRadius: 6,
-        border: 'none',
-        background: '#2e7d32',
-        color: 'white',
-        cursor: 'pointer'
-    },
-    link: {
-        marginTop: 15,
-        color: '#1976d2',
-        cursor: 'pointer'
-    }
+      <p className="auth-link" onClick={() => navigate('/login')}>
+        Já tenho conta
+      </p>
+    </div>
+  )
 }
 
 export default Cadastro

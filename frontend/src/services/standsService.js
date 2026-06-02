@@ -1,22 +1,23 @@
-const API_URL = `${import.meta.env.VITE_API_URL}`
+import { apiFetch } from './api'
 
-export async function buscarStands() {
-    const response = await fetch(`${API_URL}/stands/`);
+export const standsService = {
+  listar: () => apiFetch('/stands/'),
 
-    if (!response.ok) {
-        throw new Error('Erro ao buscar stands');
-    }
+  listarPorEvento: (eventoId) => apiFetch(`/stands/?eventoId=${eventoId}`),
 
-    const stands = await response.json()
-    return stands;
-}
+  buscarPorId: (id) => apiFetch(`/stands/${id}`),
 
-export async function buscarStandsPorEvento(eventoId) {
-    const response = await fetch(`${API_URL}/stands?eventoId=${eventoId}`);
+  criar: (dados) =>
+    apiFetch('/stands', {
+      method: 'POST',
+      body: JSON.stringify(dados),
+    }),
 
-    if (!response.ok) {
-        throw new Error('Erro ao buscar stands do evento');
-    }
+  atualizar: (id, dados) =>
+    apiFetch(`/stands/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(dados),
+    }),
 
-    return await response.json();
+  deletar: (id) => apiFetch(`/stands/${id}`, { method: 'DELETE' }),
 }

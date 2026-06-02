@@ -4,8 +4,8 @@ import L from 'leaflet'
 
 import 'leaflet/dist/leaflet.css'
 
-import { buscarEventos } from '../services/eventosService'
-import { buscarStandsPorEvento } from '../services/standsService'
+import { eventosService } from '../services/eventosService'
+import { standsService } from '../services/standsService'
 
 import { eventoIcon, standIcon, usuarioIcon } from '../utils/mapIcons';
 import TracarRotaApe from './TracarRotaApe';
@@ -72,7 +72,8 @@ function MapView() {
     useEffect(() => {
         async function load() {
             try {
-                setEventos(await buscarEventos());
+                const res = await eventosService.listar()
+                setEventos(await res.json());
             } catch (error) {
                 console.error("Erro ao buscar dados da API:", error);
             }
@@ -166,8 +167,8 @@ function MapView() {
         }
 
         try {
-            const standsEvento =
-                await buscarStandsPorEvento(idDoEvento);
+            const resStands = await standsService.listarPorEvento(idDoEvento)
+            const standsEvento = await resStands.json()
 
             setStands(standsEvento);
             setEventoAtivoId(idDoEvento);
