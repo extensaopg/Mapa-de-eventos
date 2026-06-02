@@ -50,6 +50,7 @@ function Home() {
             Login
           </button>
         )}
+        <button className="home-btn-help" onClick={() => navigate('/faq')} title="Ajuda / Documentação">?</button>
       </div>
     </div>
   )

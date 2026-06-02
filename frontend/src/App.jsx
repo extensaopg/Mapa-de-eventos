@@ -10,6 +10,7 @@ import MeusEventos from './pages/MeusEventos'
 import CriarEvento from './pages/CriarEvento'
 import EditarEvento from './pages/EditarEvento'
 import GerenciarStands from './pages/GerenciarStands'
+import FAQ from './pages/FAQ'
 
 function App() {
     return (
@@ -35,6 +36,7 @@ function App() {
                 <Route path="/editar-evento/:id" element={<EditarEvento />} />
 
                 <Route path="/eventos/:eventoId/stands" element={<GerenciarStands />} />
+                <Route path="/faq" element={<FAQ />} />
             </Routes>
         </BrowserRouter>
     )
