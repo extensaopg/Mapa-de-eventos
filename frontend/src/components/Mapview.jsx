@@ -313,6 +313,7 @@ function MapView() {
                                 </button>
 
                                 <button
+                                /*Teste de commit */
                                     onClick={() => handleTraçarRotaApe(stand)}
                                     style={estiloBotaoSecundario}
                                 >
