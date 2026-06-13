@@ -53,18 +53,36 @@ function AjusteDeCameraStands({ standsVisiveis }) {
     return null
 }
 
+function FocoDinamico({ coordenadas }) {
+    const map = useMap();
+    
+    useEffect(() => {
+        if (coordenadas) {
+            map.flyTo(coordenadas, 18, {
+                animate: true,
+                duration: 1.5 
+            });
+        }
+    }, [coordenadas, map]);
+    
+    return null;
+}
+
 function MapView() {
     const [position, setPosition] = useState(null)
     const [eventos, setEventos] = useState([])
     const [stands, setStands] = useState([])
     const [eventoAtivoId, setEventoAtivoId] = useState(null)
     const [modoStands, setModoStands] = useState(false)
+    const [buscaStandsAberta, setBuscaStandsAberta] = useState(false);
 
     const [destinoRota, setDestinoRota] = useState(null);
     const [standSelecionado, setStandSelecionado] = useState(null);
+    const [focoStand, setFocoStand] = useState(null);
 
     const [buscaAberta, setBuscaAberta] = useState(false);
     const [termoBusca, setTermoBusca] = useState('');
+    const [termoBuscaStands, setTermoBuscaStands] = useState('');
     const [mapInitialized, setMapInitialized] = useState(false)
 
     const initialCenterRef = useRef(false)
@@ -103,13 +121,130 @@ function MapView() {
         };
     }, []);
 
-    const standsVisiveis = stands
+    const standsVisiveis = stands.filter(stand => {
+        const termo = termoBuscaStands.toLowerCase();
+        const matchesNome = stand.nome?.toLowerCase().includes(termo);
+        const matchesDesc = stand.descricao?.toLowerCase().includes(termo);
+        
+        return matchesNome || matchesDesc;
+    });
 
     const eventosFiltrados = eventos.filter(evento =>
         evento.descricao?.toLowerCase().includes(termoBusca.toLowerCase())
     );
 
     if (!position) return <p>Obtendo localização...</p>
+
+    const estilosLista = {
+        fabBtnStands: {
+            position: 'absolute',
+            top: '80px',
+            right: '20px',
+            zIndex: 1000,
+            backgroundColor: '#FFFFFF',
+            color: '#1976D2',
+            border: '1px solid #1976D2',
+            borderRadius: '50px',
+            padding: '10px 18px',
+            fontSize: '14px',
+            fontWeight: 'bold',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+        },
+        
+        painelStands: {
+            position: 'absolute',
+            top: '80px',
+            right: '20px',
+            width: '320px',
+            maxWidth: 'calc(100vw - 40px)', // Evita vazar em telas muito estreitas
+            maxHeight: '60vh', // O SEGREDOS: Limita a altura a 60% da tela para preservar o mapa
+            backgroundColor: '#FFFFFF',
+            borderRadius: '12px',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+            zIndex: 1000,
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden'
+        },
+        
+        headerBusca: {
+            display: 'flex',
+            alignItems: 'center',
+            padding: '12px',
+            borderBottom: '1px solid #EAEAEA',
+            gap: '8px'
+        },
+        inputWrapper: {
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            backgroundColor: '#F4F6F8',
+            borderRadius: '8px',
+            overflow: 'hidden',
+        },
+        input: {
+            width: '100%',
+            padding: '10px 0',
+            border: 'none',
+            backgroundColor: 'transparent',
+            fontSize: '14px',
+            outline: 'none',
+            color: '#333'
+        },
+        closeBtn: {
+            background: 'none',
+            border: 'none',
+            fontSize: '16px',
+            color: '#666',
+            padding: '8px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: '50%',
+        },
+        headerInfo: {
+            padding: '8px 16px',
+            backgroundColor: '#F8FAFC',
+            borderBottom: '1px solid #EAEAEA',
+        },
+        listContainer: {
+            overflowY: 'auto',
+            flex: 1,
+            scrollbarWidth: 'thin',
+        },
+        listItem: {
+            padding: '14px 16px',
+            borderBottom: '1px solid #F4F6F8',
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '4px',
+            transition: 'background-color 0.2s',
+        },
+        itemTitle: {
+            fontSize: '14px',
+            color: '#1A1A1A'
+        },
+        itemDesc: {
+            fontSize: '12px',
+            color: '#888',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden'
+        },
+        emptyState: {
+            padding: '24px',
+            textAlign: 'center',
+            color: '#888',
+            fontSize: '14px'
+        }
+    };
 
     const estiloBotaoPrincipal = {
         padding: '6px 10px',
@@ -181,6 +316,8 @@ function MapView() {
     }
 
     return (
+    
+
         <div style={{ position: 'relative', height: '100vh', width: '100%' }}>
 
             <SearchEventMap
@@ -201,6 +338,9 @@ function MapView() {
                         setEventoAtivoId(null);
                         setStands([]);
                         setDestinoRota(null);
+                        setFocoStand(null);
+                        setTermoBuscaStands('');
+                        setBuscaStandsAberta(false);
                     }}
                     style={{
                         position: 'absolute',
@@ -218,11 +358,88 @@ function MapView() {
                     ← Voltar para eventos
                 </button>)}
 
+            {modoStands && stands.length > 0 && (
+                !buscaStandsAberta ? (
+                    // ESTADO FECHADO: Mostra apenas o botão flutuante amigável
+                    <button
+                        onClick={() => setBuscaStandsAberta(true)}
+                        style={estilosLista.fabBtnStands}
+                    >
+                        <span style={{ fontSize: '16px' }}>📍</span> Buscar Stands
+                    </button>
+                ) : (
+                    // ESTADO ABERTO: O painel se expande com limite de altura
+                    <div style={estilosLista.painelStands}>
+                        
+                        {/* Barra de Pesquisa */}
+                        <div style={estilosLista.headerBusca}>
+                            <div style={estilosLista.inputWrapper}>
+                                <span style={{ padding: '0 8px', color: '#666' }}>🔍</span>
+                                <input
+                                    autoFocus
+                                    type="text"
+                                    placeholder="Nome ou descrição..."
+                                    value={termoBuscaStands}
+                                    onChange={(e) => setTermoBuscaStands(e.target.value)}
+                                    style={estilosLista.input}
+                                />
+                            </div>
+                            <button
+                                onClick={() => {
+                                    setBuscaStandsAberta(false);
+                                    setTermoBuscaStands(''); // Limpa a busca ao fechar
+                                }}
+                                style={estilosLista.closeBtn}
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        {/* Contador de Resultados */}
+                        <div style={estilosLista.headerInfo}>
+                            <span style={{ fontSize: '12px', color: '#666' }}>
+                                {standsVisiveis.length} de {stands.length} stands encontrados
+                            </span>
+                        </div>
+
+                        {/* Lista de Stands Clicáveis */}
+                        <div style={estilosLista.listContainer}>
+                            {standsVisiveis.length > 0 ? (
+                                standsVisiveis.map(stand => (
+                                    <div
+                                        key={stand.id || stand._id}
+                                        style={estilosLista.listItem}
+                                        onClick={() => {
+                                            // 1. Foca a câmera no stand com o zoom profundo
+                                            setFocoStand([stand.latitude, stand.longitude]);
+                                            
+                                            // 2. Fecha o painel para liberar a tela (O modal não é aberto aqui)
+                                            setBuscaStandsAberta(false);
+                                        }}
+                                    >
+                                        <strong style={estilosLista.itemTitle}>
+                                            {stand.nome || stand.descricao}
+                                        </strong>
+                                        {stand.nome && (
+                                            <p style={estilosLista.itemDesc}>{stand.descricao}</p>
+                                        )}
+                                    </div>
+                                ))
+                            ) : (
+                                <div style={estilosLista.emptyState}>
+                                    Nenhum stand encontrado para esta busca.
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )
+            )}
+
             <StandModal
                 stand={standSelecionado}
                 onClose={() => setStandSelecionado(null)}
-                onTracarRota={(coordenadas) => {
-                    setDestinoRota(coordenadas);
+                onTracarRota={() => {
+                    handleTraçarRotaApe(standSelecionado);
                     setStandSelecionado(null);
                 }}
             />
@@ -234,6 +451,8 @@ function MapView() {
             >
                 <ChangeView center={position} zoom={17} onInit={initialCenterRef} />
                 <AjusteDeCameraStands standsVisiveis={standsVisiveis} />
+
+                <FocoDinamico coordenadas={focoStand} />
                 <TracarRotaApe origem={position} destino={destinoRota} />
 
                 <TileLayer

@@ -10,8 +10,12 @@ import { standsService } from '../services/standsService'
 import '../styles/gerenciarStands.css'
 
 function MapClickHandler({ setMarcadorTemporario }) {
-  useMapEvents({ click(e) { setMarcadorTemporario(e.latlng) } })
-  return null
+  const map = useMapEvents({ click(e) { 
+    setMarcadorTemporario(e.latlng);
+    map.flyTo(e.latlng, map.getZoom());
+  },
+ })
+  return null;
 }
 
 export default function GerenciarStands() {

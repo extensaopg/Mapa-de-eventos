@@ -76,7 +76,7 @@ function CriarEvento() {
   const adicionarStand = (e) => {
     e.preventDefault()
     const { nome, descricao: desc, dataInicio: di, dataFim: df } = novoStand
-    if (!nome || !desc || !di || !df) { alert('Preencha todos os campos do stand.'); return }
+    if (!nome) { alert('Preencha todos os campos obrigatórios do stand.'); return }
     setStands([...stands, { ...novoStand }])
     setNovoStand(STAND_VAZIO)
   }
@@ -208,17 +208,7 @@ function CriarEvento() {
               </div>
               <div className="form-group">
                 <label className="form-label">Descrição do Stand</label>
-                <textarea placeholder="O que haverá neste stand?" value={novoStand.descricao} onChange={(e) => setNovoStand({ ...novoStand, descricao: e.target.value })} className="form-input form-textarea" />
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label className="form-label">Data de Início</label>
-                  <input type="date" value={novoStand.dataInicio} onChange={(e) => setNovoStand({ ...novoStand, dataInicio: e.target.value })} className="form-input" />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Data de Fim</label>
-                  <input type="date" value={novoStand.dataFim} onChange={(e) => setNovoStand({ ...novoStand, dataFim: e.target.value })} className="form-input" />
-                </div>
+                <textarea placeholder="O que haverá neste stand? (Opcional)" value={novoStand.descricao} onChange={(e) => setNovoStand({ ...novoStand, descricao: e.target.value })} className="form-input form-textarea" />
               </div>
               <button type="button" onClick={adicionarStand} className="form-add-stand-btn">+ Adicionar Stand</button>
             </div>

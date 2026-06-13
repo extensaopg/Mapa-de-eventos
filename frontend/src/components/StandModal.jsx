@@ -11,10 +11,8 @@ export default function StandModal({ stand, onClose, onTracarRota }) {
                 background: 'white', padding: '24px', borderRadius: '12px',
                 width: '90%', maxWidth: '400px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
             }}>
-                <h2 style={{ marginTop: 0, color: '#333' }}>{stand.descricao}</h2>
-                
-                <p><strong>Início:</strong> {new Date(stand.data_inicio).toLocaleString('pt-BR')}</p>
-                <p><strong>Fim:</strong> {new Date(stand.data_fim).toLocaleString('pt-BR')}</p>
+                <h2 style={{ marginTop: 0, color: '#333' }}>{stand.nome}</h2>
+                <h3 style={{ marginTop: 0, color: '#333' }}>{stand.descricao}</h3>
                 
                 <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
                     <button 

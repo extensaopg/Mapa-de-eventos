@@ -35,23 +35,11 @@ export default function StandFormModal({
                     <div style={styles.inputGroup}>
                         <label style={styles.label}>Descrição Detalhada</label>
                         <textarea 
-                            required 
-                            placeholder="O que haverá neste stand? Quais os projetos apresentados?"
+                            placeholder="Descreva este stand do evento (Opcional)."
                             value={descricao} 
                             onChange={e => setDescricao(e.target.value)} 
                             style={{...styles.input, minHeight: '80px', resize: 'vertical'}} 
                         />
-                    </div>
-
-                    <div style={styles.row}>
-                        <div style={styles.inputGroup}>
-                            <label style={styles.label}>Data de Início</label>
-                            <input type="date" required value={dataInicio} onChange={e => setDataInicio(e.target.value)} style={styles.input} />
-                        </div>
-                        <div style={styles.inputGroup}>
-                            <label style={styles.label}>Data de Fim</label>
-                            <input type="date" required value={dataFim} onChange={e => setDataFim(e.target.value)} style={styles.input} />
-                        </div>
                     </div>
 
                     <div style={styles.modalActions}>
