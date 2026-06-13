@@ -232,7 +232,7 @@ function MapView() {
                 zoom={13}
                 style={{ height: '100vh', width: '100%' }}
             >
-                <ChangeView center={position} zoom={13} onInit={initialCenterRef} />
+                <ChangeView center={position} zoom={17} onInit={initialCenterRef} />
                 <AjusteDeCameraStands standsVisiveis={standsVisiveis} />
                 <TracarRotaApe origem={position} destino={destinoRota} />
 
