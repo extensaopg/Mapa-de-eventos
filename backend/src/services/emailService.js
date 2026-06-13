@@ -8,7 +8,7 @@ async function sendEmail(destination, subject, body) {
             BREVO_URL,
             {
                 sender: {
-                    name: "Mapa de Eventos",
+                    name: "Onde fica?",
                     email: process.env.EMAIL_USER
                 },
                 to: [
@@ -45,7 +45,7 @@ async function enviarEmailAtivacao(email, token) {
             </h2>
 
             <p style="font-size:14px;color:#555;text-align:center;">
-                Seja bem-vindo ao <strong>Mapa de Eventos</strong> 🎉<br/>
+                Seja bem-vindo ao <strong>Onde fica?</strong> 🎉<br/>
                 Para começar, confirme sua conta clicando no botão abaixo.
             </p>
 
@@ -68,7 +68,7 @@ async function enviarEmailAtivacao(email, token) {
     </div>
     `
 
-    return sendEmail(email, 'Ativação da conta - Mapa de Eventos', html, true)
+    return sendEmail(email, 'Ativação da conta - Onde fica?', html, true)
 }
 
 async function enviarEmailReset(email, token) {
@@ -110,7 +110,7 @@ async function enviarEmailReset(email, token) {
     </div>
     `
 
-    return sendEmail(email, 'Redefinição de Senha - Mapa de Eventos', html, true)
+    return sendEmail(email, 'Redefinição de Senha - Onde fica?', html, true)
 }
 
 module.exports = {
