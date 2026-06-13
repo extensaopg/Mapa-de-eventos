@@ -235,6 +235,131 @@
   color: #555;
 }
 
+/* Seção de Stands */
+.form-stands-section {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  background: #f5f8ff;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.form-stands-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.form-stands-title {
+  font-size: var(--font-size-lg);
+  color: var(--color-text);
+  margin: 0;
+  font-weight: 700;
+}
+
+.form-stands-required {
+  color: #e53e3e;
+}
+
+.form-stands-count {
+  font-size: var(--font-size-sm);
+  color: var(--color-primary);
+  font-weight: 600;
+  background: var(--color-primary-light);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+}
+
+.form-stands-hint {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-light);
+  margin: 0;
+}
+
+.form-stand-new {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  background: var(--color-white);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+}
+
+.form-textarea {
+  min-height: 72px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.form-add-stand-btn {
+  background: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+  padding: 10px var(--space-xl);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: bold;
+  font-size: var(--font-size-base);
+  align-self: flex-start;
+}
+
+.form-stand-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.form-stand-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  gap: var(--space-md);
+}
+
+.form-stand-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.form-stand-card__info strong {
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+}
+
+.form-stand-card__info span {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-light);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.form-stand-card__info small {
+  font-size: 12px;
+  color: var(--color-primary);
+}
+
+.form-stand-card__remove {
+  background: none;
+  border: none;
+  color: #e53e3e;
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 1;
+  padding: 0 4px;
+  flex-shrink: 0;
+}
+
 /* Responsivo */
 @media (max-width: 600px) {
   .evento-form-page {
