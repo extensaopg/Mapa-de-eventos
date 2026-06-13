@@ -34,18 +34,23 @@ function Login() {
 
       <form onSubmit={handleLogin} className="auth-form">
         <input
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="auth-input"
+            type="email"
+            name="email"
+            autoComplete="username"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="auth-input"
         />
 
         <input
-          placeholder="Senha"
-          type="password"
-          value={senha}
-          onChange={(e) => setSenha(e.target.value)}
-          className="auth-input"
+            type="password"
+            name="password"
+            autoComplete="current-password"
+            placeholder="Senha"
+            value={senha}
+            onChange={(e) => setSenha(e.target.value)}
+            className="auth-input"
         />
 
         {error && <p className="auth-msg--error">{error}</p>}
