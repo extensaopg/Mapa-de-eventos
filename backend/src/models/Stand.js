@@ -6,6 +6,10 @@ const StandSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    imagem: { 
+        type: String, 
+        default: "" 
+    },
     descricao: {
         type: String,
         trim: true

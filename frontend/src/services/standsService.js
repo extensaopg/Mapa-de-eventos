@@ -10,13 +10,13 @@ export const standsService = {
   criar: (dados) =>
     apiFetch('/stands', {
       method: 'POST',
-      body: JSON.stringify(dados),
+      body: dados,
     }),
 
   atualizar: (id, dados) =>
     apiFetch(`/stands/${id}`, {
       method: 'PUT',
-      body: JSON.stringify(dados),
+      body: dados,
     }),
 
   deletar: (id) => apiFetch(`/stands/${id}`, { method: 'DELETE' }),

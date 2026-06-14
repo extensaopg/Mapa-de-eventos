@@ -4,6 +4,9 @@ const Evento = require('../models/Evento')
 // POST /stands
 async function criarStand(req, res) {
     try {
+
+        console.log("CABEÇALHO DA REQUISIÇÃO:", req.headers['content-type']);
+        console.log("ARQUIVO RECEBIDO PELO MULTER:", req.file);
         const {
             nome,
             descricao,
@@ -21,7 +24,12 @@ async function criarStand(req, res) {
             })
         }
 
-        // Garante que o evento existe antes de criar o stand
+        let urlImagem = req.body.imagem || ""; 
+
+        if (req.file) {
+            urlImagem = req.file.secure_url; 
+        }
+
         const evento = await Evento.findById(eventoId)
         if (!evento) {
             return res.status(404).json({ message: 'Evento não encontrado' })
@@ -30,6 +38,7 @@ async function criarStand(req, res) {
         const stand = await Stand.create({
             nome,
             descricao,
+            imagem: urlImagem,
             data_inicio,
             data_fim,
             latitude,
@@ -134,7 +143,8 @@ async function atualizarStand(req, res) {
             latitude,
             longitude,
             cor_icone,
-            eventoId
+            eventoId,
+            removerImagem // 🚀 Captura o sinal vindo do formulário React
         } = req.body
 
         const stand = await Stand.findById(id)
@@ -142,7 +152,6 @@ async function atualizarStand(req, res) {
             return res.status(404).json({ message: 'Stand não encontrado' })
         }
 
-        // Se estiver trocando o evento, verifica se o novo existe
         if (eventoId && eventoId.toString() !== stand.eventoId.toString()) {
             const evento = await Evento.findById(eventoId)
             if (!evento) {
@@ -150,9 +159,23 @@ async function atualizarStand(req, res) {
             }
         }
 
+        // LÓGICA DE ATUALIZAÇÃO DA IMAGEM:
+        let urlImagem = stand.imagem; // Por padrão, mantém o que já estava
+
+        // 1. Se marcou para remover nas opções, esvazia o campo no banco de dados
+        if (removerImagem === 'true') {
+            urlImagem = ""; 
+        }
+
+        // 2. Se enviou uma foto nova, ela entra no lugar de tudo com prioridade máxima
+        if (req.file) {
+            urlImagem = req.file.secure_url; 
+        }
+
         await Stand.findByIdAndUpdate(id, {
             nome,
             descricao,
+            imagem: urlImagem, // 🚀 Salva o resultado final calculado acima
             data_inicio,
             data_fim,
             latitude,
@@ -161,7 +184,7 @@ async function atualizarStand(req, res) {
             eventoId
         }, { new: true, runValidators: true })
 
-        return res.json({ message: 'Stand atualizado com sucesso' })
+        return res.json({ message: 'Stand updated successfully' })
 
     } catch (error) {
         console.error(error)

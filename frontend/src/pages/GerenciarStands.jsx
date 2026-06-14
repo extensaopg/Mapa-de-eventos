@@ -29,6 +29,8 @@ export default function GerenciarStands() {
   const [standEmEdicao, setStandEmEdicao] = useState(null)
   const [nome, setNome] = useState('')
   const [descricao, setDescricao] = useState('')
+  const [imagem, setImagem] = useState(null)
+  const [removerImagem, setRemoverImagem] = useState(false)
   const [dataInicio, setDataInicio] = useState('')
   const [dataFim, setDataFim] = useState('')
   const markerTempRef = useRef(null)
@@ -58,6 +60,8 @@ export default function GerenciarStands() {
     setStandEmEdicao(null)
     setNome('')
     setDescricao('')
+    setImagem(null)
+    setRemoverImagem(false)
     setDataInicio(evento?.data_inicio ? evento.data_inicio.split('T')[0] : '')
     setDataFim(evento?.data_fim ? evento.data_fim.split('T')[0] : '')
     setModalAberto(true)
@@ -66,6 +70,8 @@ export default function GerenciarStands() {
   const iniciarEdicaoStand = (stand) => {
     setStandEmEdicao(stand)
     setNome(stand.nome || '')
+    setImagem(null)
+    setRemoverImagem(false)
     setDescricao(stand.descricao)
     setDataInicio(stand.data_inicio.split('T')[0])
     setDataFim(stand.data_fim.split('T')[0])
@@ -74,43 +80,62 @@ export default function GerenciarStands() {
   }
 
   const handleSalvarStand = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    const payload = {
-      nome,
-      descricao,
-      data_inicio: dataInicio,
-      data_fim: dataFim,
-      eventoId,
-      cor_icone: 'blue',
-      latitude: standEmEdicao ? standEmEdicao.latitude : marcadorTemporario.lat,
-      longitude: standEmEdicao ? standEmEdicao.longitude : marcadorTemporario.lng,
+    const formData = new FormData();
+
+    formData.append('nome', nome);
+    formData.append('descricao', descricao || '');
+    formData.append('data_inicio', dataInicio);
+    formData.append('data_fim', dataFim);
+    formData.append('eventoId', eventoId);
+    formData.append('cor_icone', 'blue');
+    formData.append('removerImagem', removerImagem ? 'true' : 'false');
+
+    const lat = standEmEdicao ? standEmEdicao.latitude : marcadorTemporario.lat;
+    const lng = standEmEdicao ? standEmEdicao.longitude : marcadorTemporario.lng;
+    formData.append('latitude', lat);
+    formData.append('longitude', lng);
+
+    if (imagem) {
+      formData.append('imagem', imagem);
     }
 
+    console.log("--- RAIO-X DO QUE ESTÁ INDO PARA O BACKEND ---");
+    for (let [chave, valor] of formData.entries()) {
+      console.log(`${chave}:`, valor);
+    }
     try {
-      const isEdicao = !!standEmEdicao
+      const isEdicao = !!standEmEdicao;
+      
       const res = isEdicao
-        ? await standsService.atualizar(standEmEdicao._id, payload)
-        : await standsService.criar(payload)
+        ? await standsService.atualizar(standEmEdicao._id, formData)
+        : await standsService.criar(formData);
 
       if (res.ok) {
-        const resStand = await res.json()
-        const standId = isEdicao ? standEmEdicao._id : resStand.id
-        const standSalvo = await (await standsService.buscarPorId(standId)).json()
+        const resStand = await res.json();
+        const standId = isEdicao ? standEmEdicao._id : resStand.id || resStand._id;
+        
+        const reqStandSalvo = await standsService.buscarPorId(standId);
+        const standSalvo = await reqStandSalvo.json();
 
         setStands(isEdicao
           ? stands.map((s) => (s._id === standSalvo._id ? standSalvo : s))
           : [...stands, standSalvo]
-        )
+        );
 
-        alert(`Stand ${isEdicao ? 'atualizado' : 'criado'} com sucesso!`)
-        setModalAberto(false)
-        setMarcadorTemporario(null)
+        alert(`Stand ${isEdicao ? 'atualizado' : 'criado'} com sucesso!`);
+        
+        setRemoverImagem(false);
+        setModalAberto(false);
+        setMarcadorTemporario(null);
+        setImagem(null);
+        
       } else {
-        alert('Erro ao processar a requisição no backend.')
+        alert('Erro ao processar a requisição no backend.');
       }
     } catch (err) {
-      console.error('Erro de conexão:', err)
+      console.error('Erro de conexão:', err);
     }
   }
 
@@ -133,6 +158,7 @@ export default function GerenciarStands() {
   if (!evento) return <div className="stands-loading">Carregando mapa do evento...</div>
 
   return (
+    
     <div className="stands-page">
       <div className="stands-map-container">
         <header className="stands-header">
@@ -184,6 +210,8 @@ export default function GerenciarStands() {
           salvarStand={handleSalvarStand}
           standEmEdicao={standEmEdicao}
           nome={nome} setNome={setNome}
+          imagem={imagem} setImagem={setImagem}
+          removerImagem={removerImagem} setRemoverImagem={setRemoverImagem}
           descricao={descricao} setDescricao={setDescricao}
           dataInicio={dataInicio} setDataInicio={setDataInicio}
           dataFim={dataFim} setDataFim={setDataFim}

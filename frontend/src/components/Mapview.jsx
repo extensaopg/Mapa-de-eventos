@@ -402,7 +402,6 @@ function MapView() {
                             </span>
                         </div>
 
-                        {/* Lista de Stands Clicáveis */}
                         <div style={estilosLista.listContainer}>
                             {standsVisiveis.length > 0 ? (
                                 standsVisiveis.map(stand => (
@@ -410,10 +409,7 @@ function MapView() {
                                         key={stand.id || stand._id}
                                         style={estilosLista.listItem}
                                         onClick={() => {
-                                            // 1. Foca a câmera no stand com o zoom profundo
                                             setFocoStand([stand.latitude, stand.longitude]);
-                                            
-                                            // 2. Fecha o painel para liberar a tela (O modal não é aberto aqui)
                                             setBuscaStandsAberta(false);
                                         }}
                                     >
@@ -511,15 +507,41 @@ function MapView() {
                 {standsVisiveis.map((stand) => (
                     <Marker
                         key={stand.id || stand._id}
-                        position={[
-                            stand.latitude,
-                            stand.longitude,
-                        ]}
+                        position={[stand.latitude, stand.longitude]}
                         icon={standIcon}
                     >
                         <Popup>
-                            <div style={{ textAlign: 'center' }}>
-                                <p><strong>{stand.nome}</strong></p>
+                            <div style={{ textAlign: 'center', minWidth: '160px' }}>
+                                <h4 style={{ margin: '0 0 8px 0', fontSize: '15px', color: '#1A1A1A' }}>
+                                    {stand.nome}
+                                </h4>
+
+                                <img
+                                    src={stand.imagem || 'https://placehold.co/400x300/E2E8F0/64748b?text=Sem+Imagem'} 
+                                    alt={`Foto de ${stand.nome}`}
+                                    style={{
+                                        width: '100%',
+                                        height: '90px',
+                                        objectFit: 'cover',
+                                        borderRadius: '6px',
+                                        marginBottom: '8px',
+                                        backgroundColor: '#E2E8F0'
+                                    }}
+                                />
+
+                                {stand.descricao && (
+                                    <p style={{ 
+                                        fontSize: '13px', 
+                                        color: '#64748B', 
+                                        margin: '0 0 12px 0',
+                                        display: '-webkit-box',
+                                        WebkitLineClamp: 3,
+                                        WebkitBoxOrient: 'vertical',
+                                        overflow: 'hidden'
+                                    }}>
+                                        {stand.descricao}
+                                    </p>
+                                )}
 
                                 <button
                                     onClick={(e) => {
@@ -532,7 +554,6 @@ function MapView() {
                                 </button>
 
                                 <button
-                                /*Teste de commit */
                                     onClick={() => handleTraçarRotaApe(stand)}
                                     style={estiloBotaoSecundario}
                                 >
