@@ -1,81 +1,86 @@
 /* home.css */
 
-.home-wrapper {
-  height: 100vh;
-  width: 100%;
-  position: relative;
+.home-container {
+  display: flex;
+  flex-direction: column; 
+  min-height: 100vh;
+  width: 100vw;
+  font-family: sans-serif;
+  background: linear-gradient(to right, #e8f5e9, #e3f2fd);
 }
 
-.home-user-box {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  z-index: 1000;
+.home-left, .home-right {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: var(--space-sm);
-}
-
-.home-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-circle);
-  background: #333;
-  color: var(--color-white);
-  display: flex;
-  align-items: center;
   justify-content: center;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.home-menu {
-  background: var(--color-white);
-  padding: 10px;
-  border-radius: var(--radius-md);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
-  box-shadow: var(--shadow-menu);
-}
-
-.home-menu button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 6px 10px;
-  text-align: left;
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-base);
-}
-
-.home-menu button:hover {
-  background: var(--color-bg);
-}
-
-.home-btn-login {
-  padding: 12px 22px;
-  border-radius: var(--radius-sm);
-  border: none;
-  background: var(--color-primary);
-  color: var(--color-white);
-  cursor: pointer;
-}
-
-
-.home-btn-help {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-circle);
-  background: var(--color-white);
-  border: 1px solid var(--color-border);
-  color: var(--color-primary);
-  font-weight: 700;
-  font-size: var(--font-size-lg);
-  cursor: pointer;
-  box-shadow: var(--shadow-card);
-  display: flex;
   align-items: center;
-  justify-content: center;
+  padding: 5%;
+  box-sizing: border-box;
+}
+
+.home-right {
+  gap: 3vh;
+}
+
+.home-left h1, .home-right h2 {
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  text-align: center;
+  margin-bottom: 4vh;
+}
+
+.home-btn {
+  padding: 3% 5%;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm, 8px);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  width: 85%;
+  max-width: 280px;
+  border: none;
+}
+
+.btn-primary {
+  background-color: #2563eb; 
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #1d4ed8;
+}
+
+.btn-secondary {
+  background-color: #10b981; 
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #059669;
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: #333;
+  border: 2px solid #333;
+}
+
+.btn-outline:hover {
+  background-color: #333;
+  color: white;
+}
+
+@media (min-width: 768px) {
+  .home-container {
+    flex-direction: row;
+  }
+
+  .home-left, .home-right {
+    width: 50%;
+    height: 100vh;
+  }
+  
+  .home-btn {
+    width: 70%;
+  }
 }

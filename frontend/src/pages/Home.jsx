@@ -1,56 +1,44 @@
-import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import MapView from '../components/Mapview'
-import { usuariosService } from '../services/usuariosService'
 import '../styles/home.css'
 
 function Home() {
-  const [user, setUser] = useState(null)
-  const [open, setOpen] = useState(false)
   const navigate = useNavigate()
 
-  useEffect(() => {
-    usuariosService
-      .me()
-      .then(async (res) => {
-        if (res.status === 401) { setUser(null); return }
-        const data = await res.json()
-        setUser(data)
-      })
-      .catch(() => setUser(null))
-  }, [])
-
-  function logout() {
-    usuariosService.logout().then(() => {
-      setUser(null)
-      navigate('/login')
-    })
-  }
-
   return (
-    <div className="home-wrapper">
-      <MapView />
+    <div className="home-container">
+      {/* Lado Esquerdo */}
+      <div className="home-left">
+        <h1 className="home-h1"> Este é o seu primeiro acesso? </h1>
+        <button 
+          className="home-btn btn-primary" 
+          onClick={() => navigate('/faq')}
+        >
+          Tutorial
+        </button>
 
-      <div className="home-user-box">
-        {user ? (
-          <>
-            <div className="home-avatar" onClick={() => setOpen(!open)}>
-              {user.nome?.charAt(0).toUpperCase()}
-            </div>
+      </div>
 
-            {open && (
-              <div className="home-menu">
-                <button onClick={() => navigate('/meus-eventos')}>Meus eventos</button>
-                <button onClick={logout}>Sair</button>
-              </div>
-            )}
-          </>
-        ) : (
-          <button className="home-btn-login" onClick={() => navigate('/login')}>
-            Login
-          </button>
-        )}
-        <button className="home-btn-help" onClick={() => navigate('/faq')} title="Ajuda / Documentação">?</button>
+      {/* Lado Direito */}
+      <div className="home-right">
+        <h2 className="home-h2"> Já estive aqui antes. </h2>
+        <button 
+          className="home-btn btn-secondary" 
+          onClick={() => navigate('/mapa')}
+        >
+          Ver eventos
+        </button>
+                <button 
+          className="home-btn btn-outline" 
+          onClick={() => navigate('/cadastro')}
+          >
+          Criar Conta
+        </button>
+        <button 
+          className="home-btn btn-outline" 
+          onClick={() => navigate('/login')}
+        >
+          Logar
+        </button>
       </div>
     </div>
   )

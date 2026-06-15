@@ -6,9 +6,11 @@ import Cadastro from './pages/Cadastro'
 import EsqueciSenha from './pages/EsqueciSenha'
 import ResetSenha from './pages/ResetSenha'
 import Home from './pages/Home.jsx'
+import Mapa from './pages/Mapa.jsx'
 import MeusEventos from './pages/MeusEventos'
 import CriarEvento from './pages/CriarEvento'
 import EditarEvento from './pages/EditarEvento'
+
 import GerenciarStands from './pages/GerenciarStands'
 import FAQ from './pages/FAQ'
 
@@ -18,6 +20,8 @@ function App() {
             <Routes>
 
                 <Route path="/" element={<Home />} />
+
+                <Route path="/mapa" element={<Mapa/>}/>
 
                 <Route path="/ativar-conta" element={<AtivarConta />} />
 
