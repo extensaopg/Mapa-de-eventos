@@ -50,7 +50,7 @@ function MeusEventos() {
             <p className="meus-eventos-header__subtitle">Gerencie suas localizações e eventos cadastrados.</p>
           </div>
           <div className="meus-eventos-header__actions">
-            <button onClick={() => navigate('/')} className="btn btn--secondary">← Voltar ao Mapa</button>
+            <button onClick={() => navigate('/mapa')} className="btn btn--secondary">← Voltar ao Mapa</button>
             <button onClick={() => navigate('/criar-evento')} className="btn btn--primary">+ Novo Evento</button>
           </div>
         </header>
