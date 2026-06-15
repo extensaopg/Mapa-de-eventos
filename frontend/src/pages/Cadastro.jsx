@@ -26,7 +26,7 @@ function Cadastro() {
       }
 
       setSuccess('Cadastro realizado! Verifique seu email para ativar a conta.')
-      setTimeout(() => navigate('/login'), 2000)
+      
     } catch {
       setError('Erro ao conectar com servidor')
     }
