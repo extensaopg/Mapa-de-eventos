@@ -22,7 +22,7 @@ function Login() {
         return
       }
 
-      navigate('/')
+      navigate('/mapa')
     } catch {
       setError('Erro ao conectar com servidor')
     }
