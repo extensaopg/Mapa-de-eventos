@@ -263,10 +263,10 @@ export default function FAQ() {
       <div className="faq-footer">
         <p>Mapa de Eventos · Documentação</p>
         <button
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/mapa')}
           style={{ marginTop: 10, background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', fontWeight: 600, fontSize: 14 }}
         >
-          ← Voltar ao mapa
+          ← Ir ao mapa
         </button>
       </div>
 
