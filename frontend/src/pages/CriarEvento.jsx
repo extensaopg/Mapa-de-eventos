@@ -19,8 +19,6 @@ function LocationMarker({ position, setPosition }) {
   return position === null ? null : <Marker position={position} />
 }
 
-const STAND_VAZIO = { nome: '', descricao: '', dataInicio: '', dataFim: '' }
-
 function CriarEvento() {
   const navigate = useNavigate()
   const [descricao, setDescricao] = useState('')
@@ -32,8 +30,6 @@ function CriarEvento() {
   const [enderecoBusca, setEnderecoBusca] = useState('')
   const [sugestoes, setSugestoes] = useState([])
   const [buscando, setBuscando] = useState(false)
-  const [stands, setStands] = useState([])
-  const [novoStand, setNovoStand] = useState(STAND_VAZIO)
 
   useEffect(() => {
     usuariosService.me().then((res) => { if (res.status === 401) navigate('/login') })
@@ -73,19 +69,8 @@ function CriarEvento() {
 
   const removerColaborador = (email) => setColaboradores(colaboradores.filter((c) => c !== email))
 
-  const adicionarStand = (e) => {
-    e.preventDefault()
-    const { nome, descricao: desc, dataInicio: di, dataFim: df } = novoStand
-    if (!nome) { alert('Preencha todos os campos obrigatórios do stand.'); return }
-    setStands([...stands, { ...novoStand }])
-    setNovoStand(STAND_VAZIO)
-  }
-
-  const removerStand = (index) => setStands(stands.filter((_, i) => i !== index))
-
   const handleSalvar = async () => {
     if (!posicao) { alert('Por favor, selecione a localização no mapa.'); return }
-    if (stands.length === 0) { alert('Adicione pelo menos um stand ao evento.'); return }
 
     try {
       const res = await eventosService.criar({
@@ -102,18 +87,24 @@ function CriarEvento() {
       const criado = await res.json()
       const eventoId = criado._id || criado.id
 
-      await Promise.all(stands.map((s) =>
-        standsService.criar({
-          nome: s.nome,
-          descricao: s.descricao,
-          data_inicio: s.dataInicio,
-          data_fim: s.dataFim,
-          eventoId,
-          cor_icone: 'blue',
-          latitude: posicao.lat,
-          longitude: posicao.lng,
-        })
-      ))
+      const formData = new FormData();
+
+      formData.append('nome', "Centro do evento");
+      formData.append('descricao', '');
+      formData.append('data_inicio', dataInicio);
+      formData.append('data_fim', dataFim);
+      formData.append('eventoId', eventoId);
+      formData.append('cor_icone', 'blue');
+
+      const lat = posicao.lat;
+      const lng = posicao.lng;
+      
+      formData.append('latitude', lat);
+      formData.append('longitude', lng);
+
+      const resStand = await standsService.criar(formData);
+
+      if (!resStand.ok) { alert('Erro ao criar stand do evento.'); return }
 
       let msg = criado.message || 'Evento criado com sucesso!'
       if (criado.emailsNaoEncontrados?.length > 0) {
@@ -192,41 +183,6 @@ function CriarEvento() {
                 <LocationMarker position={posicao} setPosition={setPosicao} />
               </MapContainer>
             </div>
-          </div>
-
-          <div className="form-stands-section">
-            <div className="form-stands-header">
-              <h3 className="form-stands-title">Stands do Evento <span className="form-stands-required">*</span></h3>
-              <span className="form-stands-count">{stands.length} adicionado{stands.length !== 1 ? 's' : ''}</span>
-            </div>
-            <p className="form-stands-hint">Obrigatório adicionar pelo menos um stand. A posição exata pode ser ajustada no mapa após salvar.</p>
-
-            <div className="form-stand-new">
-              <div className="form-group">
-                <label className="form-label">Nome do Stand</label>
-                <input type="text" placeholder="Ex: Stand da Computação" value={novoStand.nome} onChange={(e) => setNovoStand({ ...novoStand, nome: e.target.value })} className="form-input" />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Descrição do Stand</label>
-                <textarea placeholder="O que haverá neste stand? (Opcional)" value={novoStand.descricao} onChange={(e) => setNovoStand({ ...novoStand, descricao: e.target.value })} className="form-input form-textarea" />
-              </div>
-              <button type="button" onClick={adicionarStand} className="form-add-stand-btn">+ Adicionar Stand</button>
-            </div>
-
-            {stands.length > 0 && (
-              <div className="form-stand-list">
-                {stands.map((s, i) => (
-                  <div key={i} className="form-stand-card">
-                    <div className="form-stand-card__info">
-                      <strong>{s.nome}</strong>
-                      <span>{s.descricao}</span>
-                      <small>{s.dataInicio} → {s.dataFim}</small>
-                    </div>
-                    <button type="button" onClick={() => removerStand(i)} className="form-stand-card__remove">×</button>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
 
           <div className="form-btn-container">

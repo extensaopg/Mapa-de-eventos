@@ -101,10 +101,6 @@ export default function GerenciarStands() {
       formData.append('imagem', imagem);
     }
 
-    console.log("--- RAIO-X DO QUE ESTÁ INDO PARA O BACKEND ---");
-    for (let [chave, valor] of formData.entries()) {
-      console.log(`${chave}:`, valor);
-    }
     try {
       const isEdicao = !!standEmEdicao;
       

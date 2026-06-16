@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import MapView from '../components/Mapview'
 import { usuariosService } from '../services/usuariosService'
@@ -8,6 +8,8 @@ function Mapa() {
   const [user, setUser] = useState(null)
   const [open, setOpen] = useState(false)
   const navigate = useNavigate()
+  
+  const menuRef = useRef(null)
 
   useEffect(() => {
     usuariosService
@@ -18,6 +20,19 @@ function Mapa() {
         setUser(data)
       })
       .catch(() => setUser(null))
+  }, [])
+
+  useEffect(() => {
+    const handleClickFora = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickFora)
+    return () => {
+      document.removeEventListener('mousedown', handleClickFora)
+    }
   }, [])
 
   function logout() {
@@ -31,7 +46,7 @@ function Mapa() {
     <div className="map-wrapper">
       <MapView />
 
-      <div className="map-user-box">
+      <div className="map-user-box" ref={menuRef}>
         {user ? (
           <>
             <div className="map-avatar" onClick={() => setOpen(!open)}>
@@ -39,8 +54,13 @@ function Mapa() {
             </div>
 
             {open && (
-              <div className="map">
-                <button onClick={() => navigate('/meus-eventos')}>Meus eventos</button>
+              <div className="map-menu">
+                <button onClick={() => {
+                    navigate('/meus-eventos');
+                    setOpen(false);
+                }}>
+                    Meus eventos
+                </button>
                 <button onClick={logout}>Sair</button>
               </div>
             )}
