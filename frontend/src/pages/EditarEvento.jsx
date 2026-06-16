@@ -34,6 +34,7 @@ function EditarEvento() {
   const [sugestoes, setSugestoes] = useState([])
   const [buscando, setBuscando] = useState(false)
   const [validandoEmail, setValidandoEmail] = useState(false)
+  const [irParaStands, setIrParaStands] = useState(false)
 
   useEffect(() => {
     usuariosService
@@ -179,7 +180,13 @@ function EditarEvento() {
           <h2 className="evento-form-header__title">Editar Evento</h2>
         </header>
 
-        <form className="evento-form" onSubmit={(e) => e.preventDefault()}>
+        <form
+            className="evento-form"
+            onSubmit={(e) => {
+              e.preventDefault()
+              handleSalvar(irParaStands)
+            }}
+        >
           <div className="form-group">
             <label className="form-label">Descrição do Evento</label>
             <input type="text" required value={descricao} onChange={(e) => setDescricao(e.target.value)} className="form-input" />
@@ -246,8 +253,21 @@ function EditarEvento() {
           </div>
 
           <div className="form-btn-container">
-            <button type="button" onClick={() => handleSalvar(false)} className="form-submit-warning">Salvar Alterações</button>
-            <button type="button" onClick={() => handleSalvar(true)} className="form-submit-primary">Salvar & Editar Stands</button>
+            <button
+                type="submit"
+                onClick={() => setIrParaStands(false)}
+                className="form-submit-warning"
+            >
+              Salvar Alterações
+            </button>
+
+            <button
+                type="submit"
+                onClick={() => setIrParaStands(true)}
+                className="form-submit-primary"
+            >
+              Salvar & Editar Stands
+            </button>
           </div>
         </form>
       </div>
