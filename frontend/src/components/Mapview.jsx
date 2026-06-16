@@ -86,7 +86,7 @@ function MapView() {
     const [mapInitialized, setMapInitialized] = useState(false)
 
     const initialCenterRef = useRef(false)
-
+    const markerRefs = useRef({});
     useEffect(() => {
         async function load() {
             try {
@@ -320,16 +320,7 @@ function MapView() {
 
         <div style={{ position: 'relative', height: '100vh', width: '100%' }}>
 
-            <SearchEventMap
-                eventos={eventos}
-                onSelectEvento={(evento) => {
-                    setPosition([evento.latitude, evento.longitude]);
-                    setEventoAtivoId(evento.id || evento._id);
-                    setDestinoRota(null);
-                }}
-                buscaAberta={buscaAberta}
-                setBuscaAberta={setBuscaAberta}
-            />
+
 
             {modoStands && !buscaAberta && (
                 <button
@@ -445,6 +436,26 @@ function MapView() {
                 zoom={13}
                 style={{ height: '100vh', width: '100%' }}
             >
+                <SearchEventMap
+                    eventos={eventos}
+                    buscaAberta={buscaAberta}
+                    setBuscaAberta={setBuscaAberta}
+                    onSelectEvento={(evento) => {
+                        const id = evento.id || evento._id;
+                        
+
+                        if (markerRefs.current[id]) {
+                            markerRefs.current[id].openPopup();
+                            
+
+                            const map = markerRefs.current[id]._map; 
+                            map.flyTo([evento.latitude, evento.longitude], 18, { duration: 1.5 });
+                        }
+
+
+                    }}
+                />
+
                 <ChangeView center={position} zoom={17} onInit={initialCenterRef} />
                 <AjusteDeCameraStands standsVisiveis={standsVisiveis} />
 
@@ -462,47 +473,32 @@ function MapView() {
                 </Marker>
 
                 {/* eventos */}
-                {!modoStands && eventos.map((evento) => (
-                    <Marker
-                        key={evento.id || evento._id}
-                        position={[
-                            evento.latitude,
-                            evento.longitude,
-                        ]}
-                        icon={eventoIcon}
-                    >
-                        <Popup>
-                            <strong>{evento.descricao}</strong>
-                            <br />
-
-                            Início: {new Date(evento.data_inicio).toLocaleDateString('pt-BR')}
-                            <br />
-                            Fim: {new Date(evento.data_fim).toLocaleDateString('pt-BR')}
-                            <br /><br />
-
-                            {evento.quantidadeStands > 0 ? (
-                                <button
-                                    onClick={() => abrirEvento(evento)}
-                                    style={estiloBotaoPrincipal}
-                                >
-                                    Ver stands desse evento
-                                </button>
-                            ) : (
-                                <button
-                                    onClick={() =>
-                                        setDestinoRota([
-                                            evento.latitude,
-                                            evento.longitude
-                                        ])
-                                    }
-                                    style={estiloBotaoPrincipal}
-                                >
-                                    Ir até o evento
-                                </button>
-                            )}
-                        </Popup>
-                    </Marker>
-                ))}
+                {!modoStands && eventos.map((evento) => { 
+                    const id = evento.id || evento._id;
+                    return (
+                        <Marker
+                            key={id}
+                            ref={(el) => (markerRefs.current[id] = el)}
+                            position={[evento.latitude, evento.longitude]}
+                            icon={eventoIcon}
+                        >
+                            <Popup>
+                                <strong>{evento.descricao}</strong>
+                                <br />
+                                {/* ... conteúdo do popup ... */}
+                                {evento.quantidadeStands > 0 ? (
+                                    <button onClick={() => abrirEvento(evento)} style={estiloBotaoPrincipal}>
+                                        Ver stands desse evento
+                                    </button>
+                                ) : (
+                                    <button onClick={() => setDestinoRota([evento.latitude, evento.longitude])} style={estiloBotaoPrincipal}>
+                                        Ir até o evento
+                                    </button>
+                                )}
+                            </Popup>
+                        </Marker>
+                    );
+                })}
 
                 {standsVisiveis.map((stand) => (
                     <Marker
