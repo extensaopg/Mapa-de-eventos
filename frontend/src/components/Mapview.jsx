@@ -60,7 +60,7 @@ function FocoDinamico({ coordenadas }) {
         if (coordenadas) {
             map.flyTo(coordenadas, 18, {
                 animate: true,
-                duration: 1.5 
+                duration: 0.5 
             });
         }
     }, [coordenadas, map]);
@@ -85,8 +85,12 @@ function MapView() {
     const [termoBuscaStands, setTermoBuscaStands] = useState('');
     const [mapInitialized, setMapInitialized] = useState(false)
 
+    const markerUsuarioRef = useRef(null);
+    const [popupUsuarioAberto, setPopupUsuarioAberto] = useState(false);
+
     const initialCenterRef = useRef(false)
     const markerRefs = useRef({});
+    const standMarkerRefs = useRef({});
     useEffect(() => {
         async function load() {
             try {
@@ -121,6 +125,13 @@ function MapView() {
         };
     }, []);
 
+    useEffect(() => {
+        if (position && markerUsuarioRef.current && !popupUsuarioAberto) {
+            markerUsuarioRef.current.openPopup();
+            setPopupUsuarioAberto(true); 
+        }
+    }, [position, popupUsuarioAberto]);
+
     const standsVisiveis = stands.filter(stand => {
         const termo = termoBuscaStands.toLowerCase();
         const matchesNome = stand.nome?.toLowerCase().includes(termo);
@@ -138,8 +149,8 @@ function MapView() {
     const estilosLista = {
         fabBtnStands: {
             position: 'absolute',
-            top: '80px',
-            right: '20px',
+            top: '120px',
+            left: '20px',
             zIndex: 1000,
             backgroundColor: '#FFFFFF',
             color: '#1976D2',
@@ -157,11 +168,11 @@ function MapView() {
         
         painelStands: {
             position: 'absolute',
-            top: '80px',
-            right: '20px',
+            top: '120px',
+            left: '20px',
             width: '320px',
-            maxWidth: 'calc(100vw - 40px)', // Evita vazar em telas muito estreitas
-            maxHeight: '60vh', // O SEGREDOS: Limita a altura a 60% da tela para preservar o mapa
+            maxWidth: 'calc(100vw - 40px)', 
+            maxHeight: '60vh', 
             backgroundColor: '#FFFFFF',
             borderRadius: '12px',
             boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
@@ -343,7 +354,6 @@ function MapView() {
 
             {modoStands && stands.length > 0 && (
                 !buscaStandsAberta ? (
-                    // ESTADO FECHADO: Mostra apenas o botão flutuante amigável
                     <button
                         onClick={() => setBuscaStandsAberta(true)}
                         style={estilosLista.fabBtnStands}
@@ -351,10 +361,8 @@ function MapView() {
                         <span style={{ fontSize: '16px' }}>📍</span> Buscar Stands
                     </button>
                 ) : (
-                    // ESTADO ABERTO: O painel se expande com limite de altura
                     <div style={estilosLista.painelStands}>
                         
-                        {/* Barra de Pesquisa */}
                         <div style={estilosLista.headerBusca}>
                             <div style={estilosLista.inputWrapper}>
                                 <span style={{ padding: '0 8px', color: '#666' }}>🔍</span>
@@ -370,7 +378,7 @@ function MapView() {
                             <button
                                 onClick={() => {
                                     setBuscaStandsAberta(false);
-                                    setTermoBuscaStands(''); // Limpa a busca ao fechar
+                                    setTermoBuscaStands(''); 
                                 }}
                                 style={estilosLista.closeBtn}
                             >
@@ -378,7 +386,6 @@ function MapView() {
                             </button>
                         </div>
 
-                        {/* Contador de Resultados */}
                         <div style={estilosLista.headerInfo}>
                             <span style={{ fontSize: '12px', color: '#666' }}>
                                 {standsVisiveis.length} de {stands.length} stands encontrados
@@ -387,23 +394,35 @@ function MapView() {
 
                         <div style={estilosLista.listContainer}>
                             {standsVisiveis.length > 0 ? (
-                                standsVisiveis.map(stand => (
-                                    <div
-                                        key={stand.id || stand._id}
-                                        style={estilosLista.listItem}
-                                        onClick={() => {
-                                            setFocoStand([stand.latitude, stand.longitude]);
-                                            setBuscaStandsAberta(false);
-                                        }}
-                                    >
-                                        <strong style={estilosLista.itemTitle}>
-                                            {stand.nome || stand.descricao}
-                                        </strong>
-                                        {stand.nome && (
-                                            <p style={estilosLista.itemDesc}>{stand.descricao}</p>
-                                        )}
-                                    </div>
-                                ))
+                                standsVisiveis.map(stand => {
+
+                                    const idTarget = stand.id || stand._id;
+                                    
+                                    return (
+                                        <div
+                                            key={idTarget}
+                                            style={estilosLista.listItem}
+                                            onClick={() => {
+                                                setFocoStand([stand.latitude, stand.longitude]);
+                                                
+                                                setBuscaStandsAberta(false);
+                                                
+                                                setTimeout(() => {
+                                                    if (standMarkerRefs.current[idTarget]) {
+                                                        standMarkerRefs.current[idTarget].openPopup();
+                                                    }
+                                                }, 500); 
+                                            }}
+                                        >
+                                            <strong style={estilosLista.itemTitle}>
+                                                {stand.nome || stand.descricao}
+                                            </strong>
+                                            {stand.nome && (
+                                                <p style={estilosLista.itemDesc}>{stand.descricao}</p>
+                                            )}
+                                        </div>
+                                    );
+                                })
                             ) : (
                                 <div style={estilosLista.emptyState}>
                                     Nenhum stand encontrado para esta busca.
@@ -459,12 +478,11 @@ function MapView() {
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
 
-                {/* usuário */}
-                <Marker position={position} icon={usuarioIcon}>
+                <Marker position={position} icon={usuarioIcon} ref={markerUsuarioRef}>
                     <Popup>Você está aqui</Popup>
                 </Marker>
 
-                {/* eventos */}
+
                 {!modoStands && eventos.map((evento) => { 
                     const id = evento.id || evento._id;
                     return (
@@ -492,65 +510,68 @@ function MapView() {
                     );
                 })}
 
-                {standsVisiveis.map((stand) => (
-                    <Marker
-                        key={stand.id || stand._id}
-                        position={[stand.latitude, stand.longitude]}
-                        icon={standIcon}
-                    >
-                        <Popup>
-                            <div style={{ textAlign: 'center', minWidth: '160px' }}>
-                                <h4 style={{ margin: '0 0 8px 0', fontSize: '15px', color: '#1A1A1A' }}>
-                                    {stand.nome}
-                                </h4>
+                {standsVisiveis.map((stand) => {
+                    const id = stand.id || stand._id;
+                        return (
+                            <Marker
+                                key={id}
+                                ref={(el) => (standMarkerRefs.current[id] = el)}
+                                position={[stand.latitude, stand.longitude]}
+                                icon={standIcon}
+                            >
+                            <Popup>
+                                <div style={{ textAlign: 'center', minWidth: '160px' }}>
+                                    <h4 style={{ margin: '0 0 8px 0', fontSize: '15px', color: '#1A1A1A' }}>
+                                        {stand.nome}
+                                    </h4>
 
-                                <img
-                                    src={stand.imagem || 'https://placehold.co/400x300/E2E8F0/64748b?text=Sem+Imagem'} 
-                                    alt={`Foto de ${stand.nome}`}
-                                    style={{
-                                        width: '100%',
-                                        height: '90px',
-                                        objectFit: 'cover',
-                                        borderRadius: '6px',
-                                        marginBottom: '8px',
-                                        backgroundColor: '#E2E8F0'
-                                    }}
-                                />
+                                    <img
+                                        src={stand.imagem || 'https://placehold.co/400x300/E2E8F0/64748b?text=Sem+Imagem'} 
+                                        alt={`Foto de ${stand.nome}`}
+                                        style={{
+                                            width: '100%',
+                                            height: '90px',
+                                            objectFit: 'cover',
+                                            borderRadius: '6px',
+                                            marginBottom: '8px',
+                                            backgroundColor: '#E2E8F0'
+                                        }}
+                                    />
 
-                                {stand.descricao && (
-                                    <p style={{ 
-                                        fontSize: '13px', 
-                                        color: '#64748B', 
-                                        margin: '0 0 12px 0',
-                                        display: '-webkit-box',
-                                        WebkitLineClamp: 3,
-                                        WebkitBoxOrient: 'vertical',
-                                        overflow: 'hidden'
-                                    }}>
-                                        {stand.descricao}
-                                    </p>
-                                )}
+                                    {stand.descricao && (
+                                        <p style={{ 
+                                            fontSize: '13px', 
+                                            color: '#64748B', 
+                                            margin: '0 0 12px 0',
+                                            display: '-webkit-box',
+                                            WebkitLineClamp: 3,
+                                            WebkitBoxOrient: 'vertical',
+                                            overflow: 'hidden'
+                                        }}>
+                                            {stand.descricao}
+                                        </p>
+                                    )}
 
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setStandSelecionado(stand);
-                                    }}
-                                    style={estiloBotaoPrincipal}
-                                >
-                                    Ver mais detalhes
-                                </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setStandSelecionado(stand);
+                                        }}
+                                        style={estiloBotaoPrincipal}
+                                    >
+                                        Ver mais detalhes
+                                    </button>
 
-                                <button
-                                    onClick={() => handleTraçarRotaApe(stand)}
-                                    style={estiloBotaoSecundario}
-                                >
-                                    Ir até o stand
-                                </button>
-                            </div>
-                        </Popup>
-                    </Marker>
-                ))}
+                                    <button
+                                        onClick={() => handleTraçarRotaApe(stand)}
+                                        style={estiloBotaoSecundario}
+                                    >
+                                        Ir até o stand
+                                    </button>
+                                </div>
+                            </Popup>
+                        </Marker>)}
+                )}
             </MapContainer>
         </div>
     )
