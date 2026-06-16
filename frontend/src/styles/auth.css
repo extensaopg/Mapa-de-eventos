@@ -94,6 +94,23 @@
   opacity: 0.7;
 }
 
+.ativar-button {
+  margin-top: 1rem;
+  background: #16a34a;
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.ativar-button:hover {
+  background: #15803d;
+  transform: scale(1.03);
+}
+
 /* Responsivo */
 @media (max-width: 480px) {
   .auth-form {

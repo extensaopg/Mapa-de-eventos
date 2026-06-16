@@ -7,7 +7,7 @@ const UsuarioSchema = new mongoose.Schema({
 
     ativo: { type: Boolean, default: false },
     token_ativacao: String,
-
+    token_ativacao_expira: Date,
     reset_token: String,
     reset_expira: Date
 })

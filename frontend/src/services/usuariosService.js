@@ -30,4 +30,7 @@ export const usuariosService = {
     }),
 
   ativarConta: (token) => apiFetch(`/usuarios/ativar/${token}`),
+
+  validarTokenReset: (token)  => apiFetch(   `/usuarios/reset/${token}/validar`),
+
 }

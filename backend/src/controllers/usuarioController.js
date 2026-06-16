@@ -3,9 +3,49 @@ const crypto = require('crypto')
 const Usuario = require('../models/Usuario')
 const { enviarEmailAtivacao, enviarEmailReset } = require('../services/emailService')
 
+function gerarTokenComExpiracao() {
+    const token = crypto.randomBytes(32).toString('hex')
+
+    const expira = new Date()
+    expira.setHours(expira.getHours() + 1)
+
+    return { token, expira }
+}
+
+async function processarContaNaoAtivada(user) {
+
+    const tokenValido =
+        user.token_ativacao &&
+        user.token_ativacao_expira &&
+        user.token_ativacao_expira > new Date()
+
+    if (tokenValido) {
+        return {
+            novoEmailEnviado: false
+        }
+    }
+
+    const { token, expira } = gerarTokenComExpiracao()
+
+    await enviarEmailAtivacao(user.email, token)
+
+    user.token_ativacao = token
+    user.token_ativacao_expira = expira
+
+    await user.save()
+
+    return {
+        novoEmailEnviado: true
+    }
+}
+
+
+
+
+
 async function criarUsuario(req, res) {
     try {
-        const { nome, email, telefone, senha } = req.body
+        const { nome, email, senha } = req.body
 
         if (!nome || !email || !senha) {
             return res.status(400).json({
@@ -16,19 +56,40 @@ async function criarUsuario(req, res) {
         const existente = await Usuario.findOne({ email })
 
         if (existente) {
-            return res.status(409).json({
-                message: 'Email já cadastrado'
-            })
+
+            if (existente.ativo) {
+                return res.status(409).json({
+                    message: 'Email já cadastrado'
+                })
+            }
+
+            try {
+                const resultado = await processarContaNaoAtivada(existente)
+
+                return res.status(
+                    resultado.novoEmailEnviado ? 201 : 200
+                ).json({
+                    message: resultado.novoEmailEnviado
+                        ? 'Novo email de ativação enviado.'
+                        : 'Sua conta ainda não foi ativada. Verifique o email enviado anteriormente.'
+                })
+            } catch (err) {
+                console.error(err)
+
+                return res.status(502).json({
+                    message: 'Erro ao enviar email de ativação. Tente novamente.'
+                })
+            }
         }
 
         const senhaHash = await bcrypt.hash(senha, 10)
-        const token = crypto.randomBytes(32).toString('hex')
 
+        const { token, expira } = gerarTokenComExpiracao()
 
         try {
             await enviarEmailAtivacao(email, token)
-        } catch (emailError) {
-            console.error('Erro ao enviar email:', emailError)
+        } catch (err) {
+            console.error(err)
 
             return res.status(502).json({
                 message: 'Erro ao enviar email de ativação. Tente novamente.'
@@ -40,7 +101,8 @@ async function criarUsuario(req, res) {
             email,
             senha: senhaHash,
             ativo: false,
-            token_ativacao: token
+            token_ativacao: token,
+            token_ativacao_expira: expira
         })
 
         return res.status(201).json({
@@ -70,6 +132,7 @@ async function ativarConta(req, res) {
 
         user.ativo = true
         user.token_ativacao = null
+        user.token_ativacao_expira = null
 
         await user.save()
 
@@ -103,11 +166,22 @@ async function login(req, res) {
                 message: 'Usuário não encontrado'
             })
         }
-
         if (!user.ativo) {
-            return res.status(401).json({
-                message: 'Conta não ativada'
-           })
+            try {
+                const resultado = await processarContaNaoAtivada(user)
+
+                return res.status(401).json({
+                    message: resultado.novoEmailEnviado
+                        ? 'Conta não ativada. Um novo email de ativação foi enviado.'
+                        : 'Conta não ativada. Verifique o email de ativação enviado anteriormente.'
+                })
+            } catch (err) {
+                console.error(err)
+
+                return res.status(502).json({
+                    message: 'Erro ao enviar email de ativação'
+                })
+            }
         }
 
         const senhaOk = await bcrypt.compare(senha, user.senha)
@@ -149,15 +223,31 @@ async function esqueciSenha(req, res) {
             })
         }
 
-        const token = crypto.randomBytes(32).toString('hex')
+        if (!user.ativo) {
+            try {
+                const resultado = await processarContaNaoAtivada(user)
 
-        const expira = new Date()
-        expira.setHours(expira.getHours() + 1)
+                return res.status(400).json({
+                    message: resultado.novoEmailEnviado
+                        ? 'Sua conta ainda não foi ativada. Um novo email de ativação foi enviado.'
+                        : 'Sua conta ainda não foi ativada. Verifique o email de ativação enviado anteriormente.'
+                })
+            } catch (err) {
+                console.error(err)
+
+                return res.status(502).json({
+                    message: 'Erro ao enviar email de ativação'
+                })
+            }
+        }
+
+        const { token, expira } = gerarTokenComExpiracao()
 
         try {
             await enviarEmailReset(email, token)
         } catch (err) {
             console.error(err)
+
             return res.status(502).json({
                 message: 'Erro ao enviar email de recuperação'
             })
@@ -165,6 +255,7 @@ async function esqueciSenha(req, res) {
 
         user.reset_token = token
         user.reset_expira = expira
+
         await user.save()
 
         return res.json({
@@ -199,9 +290,7 @@ async function resetSenha(req, res) {
             })
         }
 
-        const senhaHash = await bcrypt.hash(senha, 10)
-
-        user.senha = senhaHash
+        user.senha = await bcrypt.hash(senha, 10)
         user.reset_token = null
         user.reset_expira = null
 
@@ -263,6 +352,43 @@ async function logout(req, res) {
         })
     }
 }
+
+async function validarTokenReset(req, res) {
+    try {
+        const { token } = req.params
+
+        const user = await Usuario.findOne({
+            reset_token: token
+        })
+
+        if (!user) {
+            return res.status(404).json({
+                valido: false,
+                motivo: 'invalido'
+            })
+        }
+
+        if (new Date() > user.reset_expira) {
+            return res.status(410).json({
+                valido: false,
+                motivo: 'expirado'
+            })
+        }
+
+        return res.json({
+            valido: true
+        })
+
+    } catch (error) {
+        console.error(error)
+
+        return res.status(500).json({
+            valido: false,
+            motivo: 'erro'
+        })
+    }
+}
+
 module.exports = {
     criarUsuario,
     ativarConta,
@@ -270,5 +396,6 @@ module.exports = {
     esqueciSenha,
     resetSenha,
     me,
-    logout
+    logout,
+    validarTokenReset,
 }

@@ -8,7 +8,8 @@ const {
     esqueciSenha,
     resetSenha,
     me,
-    logout
+    logout,
+    validarTokenReset
 } = require('../controllers/usuarioController')
 
 router.post('/', criarUsuario)
@@ -18,5 +19,6 @@ router.post('/esqueci-senha', esqueciSenha)
 router.post('/reset-senha/:token', resetSenha)
 router.get('/me', me)
 router.post('/logout', logout)
+router.get('/reset/:token/validar', validarTokenReset)
 
 module.exports = router
