@@ -279,14 +279,6 @@ function MapView() {
 
         const distanciaEmMetros = userLatLng.distanceTo(standLatLng);
 
-        if (distanciaEmMetros > 1000) {
-            const distanciaEmKm = (distanciaEmMetros / 1000).toFixed(1);
-
-            alert(`📍 Stand muito distante!\n\nEste stand está a aproximadamente ${distanciaEmKm} km de você.`);
-
-            return;
-        }
-
         setDestinoRota([stand.latitude, stand.longitude]);
     }
 
