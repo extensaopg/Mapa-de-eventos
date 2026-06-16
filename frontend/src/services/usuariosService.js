@@ -33,4 +33,8 @@ export const usuariosService = {
 
   validarTokenReset: (token)  => apiFetch(   `/usuarios/reset/${token}/validar`),
 
+  validarEmail: (email) => apiFetch(`/usuarios/validar-email/${encodeURIComponent(email)}`),
+
+
+
 }

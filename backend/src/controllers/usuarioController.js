@@ -389,6 +389,39 @@ async function validarTokenReset(req, res) {
     }
 }
 
+async function validarEmail(req, res) {
+    try {
+        const { email } = req.params
+
+        if (!email) {
+            return res.status(400).json({
+                message: 'Email é obrigatório'
+            })
+        }
+
+        const usuario = await Usuario.findOne({ email })
+
+        if (!usuario) {
+            return res.json({
+                existe: false,
+                ativo: false
+            })
+        }
+
+        return res.json({
+            existe: true,
+            ativo: usuario.ativo
+        })
+
+    } catch (error) {
+        console.error(error)
+
+        return res.status(500).json({
+            message: 'Erro ao validar email'
+        })
+    }
+}
+
 module.exports = {
     criarUsuario,
     ativarConta,
@@ -398,4 +431,5 @@ module.exports = {
     me,
     logout,
     validarTokenReset,
+    validarEmail,
 }

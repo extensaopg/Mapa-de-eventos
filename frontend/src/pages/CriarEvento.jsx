@@ -30,9 +30,25 @@ function CriarEvento() {
   const [enderecoBusca, setEnderecoBusca] = useState('')
   const [sugestoes, setSugestoes] = useState([])
   const [buscando, setBuscando] = useState(false)
+  const [meuEmail, setMeuEmail] = useState('')
+  const [validandoEmail, setValidandoEmail] = useState(false)
 
   useEffect(() => {
-    usuariosService.me().then((res) => { if (res.status === 401) navigate('/login') })
+    usuariosService
+        .me()
+        .then((res) => {
+          if (res.status === 401) {
+            navigate('/login')
+            return null
+          }
+
+          return res.json()
+        })
+        .then((data) => {
+          if (data) {
+            setMeuEmail(data.email)
+          }
+        })
   }, [navigate])
 
   useEffect(() => {
@@ -59,12 +75,50 @@ function CriarEvento() {
     setSugestoes([])
   }
 
-  const adicionarColaborador = (e) => {
+  const adicionarColaborador = async (e) => {
     e.preventDefault()
-    if (!emailInput) return
-    if (colaboradores.includes(emailInput)) { alert('Este e-mail já está na lista.'); return }
-    setColaboradores([...colaboradores, emailInput])
-    setEmailInput('')
+
+    if (validandoEmail) return
+
+    const email = emailInput.trim().toLowerCase()
+
+    if (!email) return
+
+    if (email === meuEmail.toLowerCase()) {
+      alert('Você já é administrador deste evento.')
+      return
+    }
+
+    if (colaboradores.includes(email)) {
+      alert('Este e-mail já está na lista.')
+      return
+    }
+
+    setValidandoEmail(true)
+
+    try {
+      const res = await usuariosService.validarEmail(email)
+
+      if (!res.ok) {
+        alert('Erro ao validar usuário.')
+        return
+      }
+
+      const data = await res.json()
+
+      if (!data.existe || !data.ativo) {
+        alert('Usuário não encontrado.')
+        return
+      }
+
+      setColaboradores([...colaboradores, email])
+      setEmailInput('')
+    } catch (error) {
+      console.error(error)
+      alert('Erro ao validar usuário.')
+    } finally {
+      setValidandoEmail(false)
+    }
   }
 
   const removerColaborador = (email) => setColaboradores(colaboradores.filter((c) => c !== email))
@@ -146,7 +200,13 @@ function CriarEvento() {
             <label className="form-label">Adicionar Colaboradores (Opcional)</label>
             <div className="form-collab-row">
               <input type="email" placeholder="E-mail do usuário cadastrado" value={emailInput} onChange={(e) => setEmailInput(e.target.value)} className="form-input" />
-              <button onClick={adicionarColaborador} className="form-add-btn">Adicionar</button>
+              <button
+                  onClick={adicionarColaborador}
+                  className="form-add-btn"
+                  disabled={validandoEmail}
+              >
+                {validandoEmail ? 'Validando...' : 'Adicionar'}
+              </button>
             </div>
             {colaboradores.length > 0 && (
               <div className="form-pill-list">
