@@ -179,7 +179,12 @@ function CriarEvento() {
           <h2 className="evento-form-header__title">Criar Novo Evento</h2>
         </header>
 
-        <form className="evento-form">
+        <form className="evento-form"
+              onSubmit={(e) => {
+                e.preventDefault()
+                handleSalvar()
+              }}
+        >
           <div className="form-group">
             <label className="form-label">Descrição do Evento</label>
             <input type="text" placeholder="Ex: Feira de Ciências" required value={descricao} onChange={(e) => setDescricao(e.target.value)} className="form-input" />
@@ -245,9 +250,12 @@ function CriarEvento() {
             </div>
           </div>
 
-          <div className="form-btn-container">
-            <button type="button" onClick={handleSalvar} className="form-submit-primary">Criar Evento</button>
-          </div>
+          <button
+              type="submit"
+              className="form-submit-primary"
+          >
+            Criar Evento
+          </button>
         </form>
       </div>
     </div>
