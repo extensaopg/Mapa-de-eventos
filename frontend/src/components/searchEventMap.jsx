@@ -17,7 +17,6 @@ const styles = {
         gap: '5px'
     },
     button: {
-        width: '34px',
         height: '34px',
         background: 'white',
         border: 'none',
@@ -26,8 +25,12 @@ const styles = {
         cursor: 'pointer',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: '16px'
+        gap: '6px',
+        padding: '0 12px',
+        fontSize: '13px',
+        fontWeight: 'bold',
+        color: '#1976D2',
+        whiteSpace: 'nowrap'
     },
     btnVerEventos: {
         height: '34px',
@@ -149,15 +152,16 @@ export default function SearchEventMap({ eventos, onSelectEvento, buscaAberta, s
         >
             {/* Linha 1: lupa + input de busca */}
             <div style={styles.wrapper}>
-                <button
-                    onClick={() => {
-                        setBuscaAberta(!buscaAberta);
-                        if (painelEventosAberto) setPainelEventosAberto(false);
-                    }}
-                    style={styles.button}
-                >
-                    🔍
-                </button>
+            <button
+                onClick={() => {
+                    setBuscaAberta(!buscaAberta);
+                    if (painelEventosAberto) setPainelEventosAberto(false);
+                }}
+                style={styles.button}
+            >
+                <span>🔍</span>
+                <span>Buscar evento...</span>
+            </button>
 
                 {buscaAberta && (
                     <input

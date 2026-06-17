@@ -91,6 +91,7 @@ function MapView() {
     const initialCenterRef = useRef(false)
     const markerRefs = useRef({});
     const standMarkerRefs = useRef({});
+    
     useEffect(() => {
         async function load() {
             try {
@@ -447,25 +448,21 @@ function MapView() {
                 zoom={13}
                 style={{ height: '100vh', width: '100%' }}
             >
-                <SearchEventMap
-                    eventos={eventos}
-                    buscaAberta={buscaAberta}
-                    setBuscaAberta={setBuscaAberta}
-                    onSelectEvento={(evento) => {
-                        const id = evento.id || evento._id;
-                        
-
-                        if (markerRefs.current[id]) {
-                            markerRefs.current[id].openPopup();
-                            
-
-                            const map = markerRefs.current[id]._map; 
-                            map.flyTo([evento.latitude, evento.longitude], 18, { duration: 1.5 });
-                        }
-
-
-                    }}
-                />
+                {!modoStands && (
+                    <SearchEventMap
+                        eventos={eventos}
+                        buscaAberta={buscaAberta}
+                        setBuscaAberta={setBuscaAberta}
+                        onSelectEvento={(evento) => {
+                            const id = evento.id || evento._id;
+                            if (markerRefs.current[id]) {
+                                markerRefs.current[id].openPopup();
+                                const map = markerRefs.current[id]._map; 
+                                map.flyTo([evento.latitude, evento.longitude], 18, { duration: 1.5 });
+                            }
+                        }}
+                    />
+                )}
 
                 <ChangeView center={position} zoom={17} onInit={initialCenterRef} />
                 <AjusteDeCameraStands standsVisiveis={standsVisiveis} />
