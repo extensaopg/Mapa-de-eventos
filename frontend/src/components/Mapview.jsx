@@ -294,6 +294,11 @@ function MapView() {
         const distanciaEmMetros = userLatLng.distanceTo(standLatLng);
 
         setDestinoRota([stand.latitude, stand.longitude]);
+    
+        const id = stand.id || stand._id;
+        if (standMarkerRefs.current[id]) {
+            standMarkerRefs.current[id].closePopup();
+        }
     }
 
     async function abrirEvento(evento) {
