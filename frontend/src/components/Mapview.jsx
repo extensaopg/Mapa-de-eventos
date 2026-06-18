@@ -40,6 +40,8 @@ function ChangeView({ center, zoom, onInit }) {
 function AjusteDeCameraStands({ standsVisiveis }) {
     const map = useMap()
 
+    const standsHash = standsVisiveis.map(s => s.id || s._id).join(',');
+
     useEffect(() => {
         if (standsVisiveis.length > 0) {
             const bounds = L.latLngBounds([])
@@ -48,7 +50,7 @@ function AjusteDeCameraStands({ standsVisiveis }) {
             })
             map.fitBounds(bounds, { padding: [50, 50] })
         }
-    }, [standsVisiveis, map])
+    }, [standsHash, map])
 
     return null
 }
